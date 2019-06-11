@@ -1,60 +1,68 @@
-﻿var scilocalTabsQuery = {url: ["http://127.0.0.1:9000/research/*",
-							   "http://localhost:9000/research/*",
-							   "https://scilocal.at.ispras.ru/research/*",
-							   "https://scigraph.at.ispras.ru/research/*",
-							   "https://scinoon.at.ispras.ru/research/*",
-							   "https://scinoon.com/research/*"]};
+﻿const DEBUG = true;
+
+const scilocalTabsQuery = {
+	url: [
+		"http://127.0.0.1:9000/research/*",
+		"http://localhost:9000/research/*",
+		"https://scilocal.at.ispras.ru/research/*",
+		"https://scigraph.at.ispras.ru/research/*",
+		"https://scinoon.at.ispras.ru/research/*",
+		"https://scinoon.com/research/*"
+	]
+};
 
 function queryAddr(url) {
-	var addr = "";
-	if (url.search("semanticscholar")!= -1 ) {
-		addr = '/ext/';
+	let resultAddr = "";
+	if (url.search("semanticscholar") !== -1) {
+		resultAddr = "/scholar/";
 	}	
-	if (url.search("scholar.google")!= -1 ) {
-		addr = '/scholar/';
-	}	
-	return addr;
+	else if (url.search("scholar.google") !== -1) {
+		resultAddr = "/scholar/";
+	}
+	return resultAddr;
 }
 
 var sciserver = function() {
 
-	function onTermsExtractionError(jqXHR, textStatus, errorThrown) {
-		console.log("terms extraction error: " + textStatus
-				+ errorThrown);
-	}
 
 	return {
-		saveAndProcessArticles : function(articles, sender) {
+		saveAndProcessArticles : (articles, sender) => {
 			browser.storage.local.get().then(data => {
-				var base = data.origin;
-				var id = sender.tab.id;
-				var url = sender.url;
+				let base = data.origin;
+				let id = sender.tab.id;
+				let url = sender.url;
+				
+				if (DEBUG) {
+					console.log("Result request URL: ", base + queryAddr(url) + data.map);
+				}
+
 				$.ajax({
-					type : "POST",
-					url : base + queryAddr(url) + data.map,
-					data : articles,
-					success : function(data) {
-						console.log("normalized data arrives: " + data);
-						// TODO PERF: Avoid conversion to/from text
+					type    : "POST",
+					url     : base + queryAddr(url) + data.map,
+					data    : articles,
+					success : (data) => {
+						if (DEBUG) {
+							console.log(messages.success.NORMALIZED_DATA);
+							console.log(data);
+						}
+
 						browser.tabs.sendMessage(id, {
-							name: messages.NORMALIZED_DATA,
-							data: data
+							name : messages.success.NORMALIZED_DATA,
+							data : data
 						});
 					},
-					error : function(jqXHR, textStatus, errorThrown) {
-						console.log("normalized data error: " + textStatus
-								+ errorThrown);
-						// TODO Show error message in popup
-					},
-					dataType : "json",
+					// TODO Show error message in popup
+					error       : messages.error.NORMALIZED_ERROR.info,
+					dataType    : "json",
 					contentType : "application/json"
 				});
 			});
 
 		},
-		saveResearchMap : function(articles, callback, map) {
+
+		saveResearchMap : (articles, callback, map) => {
 			browser.storage.local.get().then(data => {
-				var base = data.origin;
+				let base = data.origin;
 				map = typeof map !== 'undefined' ? map : data.map;
 				if (map == null) {
 					console.log("warn! unsetted research map name.");
@@ -72,24 +80,28 @@ var sciserver = function() {
 				});
 			});
 		},
-		getTermsFromResearch: function(id) {
+
+		getTermsFromResearch : (id) => {
 			browser.storage.local.get().then( data => {
 				var base = data.origin;
 				$.ajax({
 					type: "GET",
 					url: base + '/research/' + data.map + '/terms/getFromResearch/' + data.topCount,
-					success: function(data) {
-						console.log("terms from research arrives: " + data)
+					success: (data) => {
+						if (DEBUG) {
+							console.log(messages.success.EXTRACTED_TERMS_RESEARCH);
+							console.log(JSON.stringify(data));
+						}
 						browser.tabs.sendMessage(id, {
-							name: messages.EXTRACTED_TERMS_RESEARCH,
+							name: messages.success.EXTRACTED_TERMS_RESEARCH,
 							data: data
 						});
 					},
-					error: onTermsExtractionError
+					error: messages.error.EXTRACTED_TERMS_ERROR.info,
 				});
 			}, onError);
 		},
-		getTermsFromClusters: function(id) {
+		getTermsFromClusters: (id) => {
 			browser.storage.local.get().then(data => {
 				var base = data.origin;
 				$.ajax({
@@ -101,12 +113,12 @@ var sciserver = function() {
 						} else {
 							console.log("terms from cluster arrives: " + data);
 							browser.tabs.sendMessage(id, {
-								name: messages.EXTRACTED_TERMS_CLUSTERS,
+								name: messages.success.EXTRACTED_TERMS_CLUSTERS,
 								data: data
 							});
 						}
 					},
-					error : onTermsExtractionError
+					error : messages.error.EXTRACTED_TERMS_ERROR.info,
 				});
 			}, onError);
 		}
@@ -119,12 +131,14 @@ function onError(error) {
 
 function sendRmUpdatedToTabs(tabs) {
 	for (let tab of tabs) {
-		browser.tabs.sendMessage(tab.id, {name: messages.RM_UPDATED});
+		browser.tabs.sendMessage(tab.id, {name: messages.success.RM_UPDATED});
 	}
 }
 
 function handleReturnExtracted(message, sender) {
-	console.log("extraction results arrive!");
+	if (DEBUG) {
+		console.log("extraction results arrive");
+	}
 	sciserver().saveAndProcessArticles(JSON.stringify(message.data.articles), sender);
 }
 
@@ -163,18 +177,18 @@ function handleGetTerms(sender) {
 	sciserver().getTermsFromClusters(sender.tab.id);
 }
 
-browser.runtime.onMessage.addListener(function(message, sender) {
+browser.runtime.onMessage.addListener((message, sender) => {
 	switch (message.name) {
-		case messages.SET_DEFAULT_MAP:
+		case messages.success.SET_DEFAULT_MAP:
 			handleSetDefaultMap(message);
 			break;
-		case messages.SELECTED_ARTICLES:
+		case messages.success.SELECTED_ARTICLES:
 			handleSelectedArticles(message);
 			break;
-		case messages.RETURN_EXTRACTED:
+		case messages.success.RETURN_EXTRACTED:
 			handleReturnExtracted(message, sender);
 			break;
-		case messages.GET_TERMS:
+		case messages.success.GET_TERMS:
 			handleGetTerms(sender);
 			break;
 	}

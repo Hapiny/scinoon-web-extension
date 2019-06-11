@@ -30,7 +30,7 @@ function ParseArticles(){
     console.log("beforeSendParsed");
     console.log(articles);
 	browser.runtime.sendMessage({
-	    name: messages.RETURN_EXTRACTED,
+	    name: messages.success.RETURN_EXTRACTED,
 	    data: {
 	    	url : window.location.href,
 	    	articles : articles
@@ -48,7 +48,8 @@ function handleNormalizedData(message) {
 	console.log("normalized data arrived");
 	
 	var normalizedArticlesStatus = message.data;
-	var articleBlocks = $('.search-result');
+    var articleBlocks = $('.search-result');
+    console.log(articleBlocks.length);
 	console.log("normalizedArticlesStatus", normalizedArticlesStatus);
 	for (var index = 0; index < normalizedArticlesStatus.length; ++index) {
 	    var articleStatus = normalizedArticlesStatus[index];
@@ -85,7 +86,7 @@ function handleNormalizedData(message) {
 	        }
 	        button.click(articleId, function(event) {
 	        	browser.runtime.sendMessage({
-	        	    name: messages.SELECTED_ARTICLES,
+	        	    name: messages.success.SELECTED_ARTICLES,
 	        	    data: [event.data]
 	        	});
 	        	setAdded(this);
@@ -173,25 +174,29 @@ $( function () {
 	console.log("scholarContentBegin");
 	InjectCSS();
 	console.log("GetTerms");
-	browser.runtime.sendMessage({name: messages.GET_TERMS});
+	browser.runtime.sendMessage({name: messages.success.GET_TERMS});
 	createTermsPanel();
 	
-		// For normalized article data arrived from server, initialize controls to attach
+	// For normalized article data arrived from server, initialize controls to attach
 	// articles to research map
-	browser.runtime.onMessage.addListener(function(message) {
+	browser.runtime.onMessage.addListener((message) => {
+        console.log(message);
 		switch (message.name) {
-			case messages.NORMALIZED_DATA: 
+			case messages.success.NORMALIZED_DATA: 
 				handleNormalizedData(message);
 				break;
-			case messages.EXTRACTED_TERMS_RESEARCH:
+			case messages.success.EXTRACTED_TERMS_RESEARCH:
 				handleExtractedTermsResearch(message);
 				break;
-			case messages.EXTRACTED_TERMS_CLUSTERS:
+			case messages.success.EXTRACTED_TERMS_CLUSTERS:
 				handleExtractedTermsClusters(message);
 				break;
 		}
 	});
-
+    // console.log(blocks.length);
+    // for(var i = 0; i <= blocks.length; i+=1) {
+    //     console.log(blocks[i]);
+    // }
 
 	var observer = new MutationObserver(function (mutations, me) {
 	  // `mutations` is an array of mutations that occurred

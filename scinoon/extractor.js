@@ -147,11 +147,17 @@ var extractor = {
 		var blocks = doc.getElementsByClassName("search-result");
 
 		console.log(blocks);
-		console.log(blocks.length);
-		for(var i = 0; i <= blocks.length; i+=1) {
-			console.log(blocks[i]);
+		var more_authors_btns = document.getElementsByClassName("more-authors-label");
+		console.log(more_authors_btns.length);
+		for (let btn of more_authors_btns) {
+			btn.click();
 		}
 		
+		var more_abstract_btns = document.getElementsByClassName("more mod-clickable");
+		console.log(more_abstract_btns.length);
+		for (let btn of more_abstract_btns) {
+			btn.click();
+		}		
 		for(var i = 0; i <= blocks.length-1; i+=1) {
 			
 			if (blocks[i].getElementsByClassName("more mod-clickable")[0] != undefined) { 
