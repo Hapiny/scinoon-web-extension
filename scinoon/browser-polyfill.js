@@ -627,7 +627,7 @@
       const makeCallback = (promise, metadata) => {
         return (...callbackArgs) => {
           if (chrome.runtime.lastError) {
-            console.log(chrome.runtime.lastError);
+            console.log(chrome.runtime.lastError.message);
             // promise.reject(chrome.runtime.lastError);
           } else if (metadata.singleCallbackArg || callbackArgs.length === 1) {
             promise.resolve(callbackArgs[0]);

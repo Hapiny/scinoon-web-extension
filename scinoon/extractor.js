@@ -3,7 +3,7 @@
  */
 
 var extractor = {
-	GSExtractor : function(doc) {
+	GSExtractor : (doc) => {
 		function parseOrigin(origin) {
 			var result = {}
 			var authors_publisher_year = origin.split("- ");
@@ -137,73 +137,86 @@ var extractor = {
 		} catch (e) {
 			console.log(e);
 		}
+		console.log(result[0]);
 		return result;
 	},
 	
-	SSExtractor : function(doc) {
-		
-		var clickEvent = new MouseEvent("click", {
-			"view": window,
-			"bubbles": true,
-			"cancelable": false
-		});
-		
-		var result = [];
-		var blocks = doc.getElementsByClassName("search-result");
-			
-		for(var i = 0; i <= blocks.length-1; i+=1) {
-			
-			if (blocks[i].getElementsByClassName("more mod-clickable")[0] != undefined) { 
-				blocks[i].getElementsByClassName("more mod-clickable")[0].dispatchEvent(clickEvent);
+	SSExtractor : (doc) => {
+		let extractedArticles = [];
+		let articleBlocks = doc.getElementsByClassName("search-result");
+
+		for(let block of articleBlocks) {
+			let article = {
+				ids : [], authors : []
+			};
+			let moreAuthorsButton = block.getElementsByClassName("more-authors-label")[0];
+			// click to get full list of authors
+			if (moreAuthorsButton) {
+				moreAuthorsButton.click();
 			}
 			
-			var article = {};
-			
-			article["ids"] = [];
-			
-			article["authors"] = [];
-			var authors_elements = blocks[i].getElementsByClassName("author-list__link");
-			for(var j = 0; j <= authors_elements.length-1; j+=1) {
-				var author = {};
-				author["fullName"] = authors_elements[j].innerText;
-				author["ids"] = [];
-				article["authors"].push(author);
+			let authorsElements = block.getElementsByClassName("author-list__link");
+			for(let elem of authorsElements) {
+				let author = {
+					fullName : elem.innerText, 
+					ids : []
+				};
+				article.authors.push(author);
 			}
-						
-			var paperLink = blocks[i].getElementsByClassName("icon-button paper-link")[0];
+			
+			moreAuthorsButton = block.getElementsByClassName("more-authors-label")[0];
+			// hide list of authors
+			if (moreAuthorsButton) {
+				moreAuthorsButton.click();
+			}
+			
+			////////////////////////////////////////////////////////////////////////////////////
+			let paperLink = block.getElementsByClassName("icon-button paper-link")[0];
 			if(paperLink &&  paperLink.innerText.search("View Paper") != -1) {
 				article["textType"] = "pdf";
 				article["textUrl"] = paperLink.getAttribute("href");
 			}
+			////////////////////////////////////////////////////////////////////////////////////
 			
-			var title_element = blocks[i].getElementsByClassName("search-result-title")[0];
-			var id = {};
-			id["src"] = "semantic-scholar";
-			id["id"] = title_element.getElementsByTagName("a")[0].getAttribute("href").split('/').pop();
-			article["ids"].push(id);
-			article["title"] = title_element.innerText;
+			let titleElement = block.getElementsByClassName("search-result-title")[0];
+			let info = {
+				id  : titleElement.getElementsByTagName("a")[0].getAttribute("href").split('/').pop(),
+				src : "semantic-scholar",
+			};
+			article.ids.push(info);
+			article.title = titleElement.innerText;
 			
-			article["year"] = parseInt(blocks[i].querySelectorAll('[data-selenium-selector="paper-year"]')[0].innerText);
-			
-			if (blocks[i].getElementsByClassName("abstract full-abstract")[0] != undefined) {
-				article["abstractText"] = blocks[i].getElementsByClassName("abstract full-abstract")[0].innerText;
+			let yearField = block.querySelector('[data-selenium-selector="paper-year"]');
+			if (yearField) {
+				article["year"] = parseInt(yearField.innerText);
+			}
+
+			let moreAbstractButton = block.getElementsByClassName("more mod-clickable")[0];
+			// click to get full abstract
+			if (moreAbstractButton) {
+				moreAbstractButton.click();
 			}
 			
-			if (blocks[i].getElementsByClassName("more mod-clickable")[0] != undefined) { 
-				blocks[i].getElementsByClassName("more mod-clickable")[0].dispatchEvent(clickEvent);
+			let abstractField = block.getElementsByClassName("abstract")[0];
+			if (abstractField) {
+				article["abstractText"] = abstractField.innerText.slice(0, -7);
 			}
-			result.push(article);
+			// click to hide full abstract
+			if (moreAbstractButton) {
+				moreAbstractButton.click();
+			}
+
+			extractedArticles.push(article);
 		}
 		
-		return result;
+		return extractedArticles;
 	},
-
+	
 	extract : function(doc) {
-		// TODO: switch depending on URL
-		if (doc.location['href'].search("scholar.google") !== -1 ) {
+		if (doc.location['href'].search("scholar.google") !== -1) {
 			return this.GSExtractor(doc);
 		}
-		else if (doc.location['href'].search("semanticscholar") !== -1 ) {
+		else if (doc.location['href'].search("semanticscholar") !== -1) {
 			return this.SSExtractor(doc);
 		}
 	}

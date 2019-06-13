@@ -116,7 +116,7 @@ function handleNormalizedData(message) {
 		button.disabled = true;
     }
     
-    var normalizedArticlesStatus = message.data;
+	var normalizedArticlesStatus = message.data;
     var articleBlocks = $(scholar.articleBlocksSelector);
 
     for (var index = 0; index < normalizedArticlesStatus.length; ++index) {
@@ -131,14 +131,13 @@ function handleNormalizedData(message) {
 	        let button = $("<button>", {
 	            id: `add_to_rm_${scholarId}`,
 	            type: "button",
-	            class: "add_to_rm_button",
+	            class: "btn btn-primary add_to_rm_button",
 	            text: "Add to research map"
-            });
-            
+			});
+			
             if (articleStatus["isExist"]) {
 	        	setAdded(button[0]);
             }
-            
             if (!articleStatus["isViewed"]) {
                 let titleField = scholar.titleFieldSeclector(articleBlock[0]);
                 let label = document.createElement('span');
@@ -162,7 +161,6 @@ function handleNormalizedData(message) {
 }
 
 let scholarStarter = $(() => {
-    console.log("scholar begin");
 	injectLocalCss();
 	browser.runtime.sendMessage({name: messages.GET_TERMS});
 	createTermsPanel();
@@ -177,16 +175,14 @@ let scholarStarter = $(() => {
 			case messages.EXTRACTED_TERMS_RESEARCH:
                 handleExtractedTermsResearch(message);
 				break;
-                case messages.EXTRACTED_TERMS_CLUSTERS:
+			case messages.EXTRACTED_TERMS_CLUSTERS:
 				handleExtractedTermsClusters(message);
 				break;
             }
         });
     if (scholar.name !== "semantic") {
-        console.log(scholar.name);
         parseSearchResult();
     } else {
-        console.log(scholar.name);
         let observer = new MutationObserver(function (mutations, me) {
             let canvas = document.getElementsByClassName('search-result');
             if (canvas != null && canvas.length) {
@@ -195,19 +191,16 @@ let scholarStarter = $(() => {
                 if (!buttonsPresent && !waitPageLoading) {
                       waitPageLoading = true;
                       parseSearchResult();
-                      
                     }
                     // stop observer
-                    me.disconnect();
-                    return;
+                    // me.disconnect();
+                    // return;
             }
         });
-        
         // start observing
         observer.observe(document, {
             childList: true,
             subtree: true
         });
     }
-    console.log("scholar end");
 });

@@ -19,14 +19,14 @@ var messages = {
 
 var scholars = {
 	google : {
-		name       : "google",
-		searchPath : "/scholar?q=",
+		name            : "google",
+		searchPath      : "/scholar?q=",
 		getSearchString : () => {
 			return document.getElementById("gs_hdr_tsi").value;
 		},
 		articleBlocksSelector : "#gs_res_ccl_mid > .gs_r",
-		articleSourceName : "scholar",
-		titleFieldSeclector : (block) => {
+		articleSourceName     : "scholar",
+		titleFieldSeclector   : (block) => {
 			return block.getElementsByClassName("gs_rt")[0];
 		},
 		getBlockFilter : (id) => {
@@ -34,14 +34,14 @@ var scholars = {
 		}
 	},
 	semantic : {
-		name       : "semantic",
-		searchPath : "/search?q=",
+		name            : "semantic",
+		searchPath      : "/search?q=",
 		getSearchString : () => {
 			return document.getElementsByClassName("input form-input")[0].value;
 		},
 		articleBlocksSelector : ".search-result",
-		articleSourceName : "ext-semantic-scholar",
-		titleFieldSeclector : (block) => {
+		articleSourceName     : "ext-semantic-scholar",
+		titleFieldSeclector   : (block) => {
 			return block.getElementsByTagName("a")[0];
 		},
 		getBlockFilter : (id) => {
