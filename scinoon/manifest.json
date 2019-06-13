@@ -1,94 +1,65 @@
 {
-    "manifest_version": 2,
-    "name": "Scinoon Local GS Extension",
-    "version": "2.0.0.90",
+  "manifest_version": 2,
+  "name": "Scinoon Local GS Extension",
+  "version": "2.0.0.90",
 
-    "icons": {
-        "128": "icons/icon128.png",
-        "48": "icons/icon48.png",
-        "16": "icons/button.png"
-    },
+  "icons": {
+    "128": "icons/icon128.png",
+    "48": "icons/icon48.png",
+    "16": "icons/button.png"
+  },
 
-    "background": {
-        "scripts": [
-            "browser-polyfill.js", 
-            "lib/jquery-3.2.1.min.js", 
-            "types.js",
-            "background.js"
-        ]
-    },
-
-    "content_scripts": [
-        {
-            "matches": [
-                "http://127.0.0.1:9000/research/*",
-                "http://localhost:9000/research/*",
-                "https://scilocal.at.ispras.ru/research/*",
-                "https://scigraph.at.ispras.ru/research/*",
-                "https://scinoon.at.ispras.ru/research/*",
-                "https://scinoon.com/research/*"
-            ],
-            "js": [
-                "browser-polyfill.js", 
-                "types.js", 
-                "lib/jquery-3.2.1.min.js",
-                "ping.js", 
-                "rm_content.js"
-            ],
-            "run_at": "document_idle"
-        },
-        {
-            "matches": [
-                "*://scholar.google.com/*",
-                "*://scholar.google.ru/*"
-            ],
-            "include_globs": [
-                "*://scholar.google.*/", 
-                "*scholar.google.*/scholar*", 
-                "*scholar.google.*/schhp*"
-            ],
-            "js": [
-                "browser-polyfill.js", 
-                "types.js", 
-                "lib/jquery-3.2.1.min.js",
-                "extractor.js", 
-                "google_scholar_content.js"
-            ],
-            "css": [
-                "lib/bootstrap.min.css"
-            ]
-        },
-        {
-            "matches": [
-                "*://www.semanticscholar.org/search?q=*"
-            ],
-            "include_globs": [
-                "*://www.semanticscholar.*/", 
-                "*www.semanticscholar.*/search*"
-            ],
-            "js": [
-                "browser-polyfill.js", 
-                "types.js", 
-                "lib/jquery-3.2.1.min.js",
-                "extractor.js", 
-                "semantic_scholar_content.js"
-            ],
-            "css": [
-                "lib/bootstrap.min.css"
-            ]
-        }
-    ],
-    "options_ui": {
-        "page": "options.html",
-        "open_in_tab": false
-    },
-    "web_accessible_resources": [
-        "scholar_styles.css",
-        "icons/add.png"
-    ],
-    "permissions": [
-        "storage", 
-        "tabs"
+  "background": {
+    "scripts": [
+      "browser-polyfill.js", "lib/jquery-3.2.1.min.js", "types.js",
+      "background.js"
     ]
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["http://127.0.0.1:9000/research/*",
+      			  "http://localhost:9000/research/*",
+      			  "https://scilocal.at.ispras.ru/research/*",
+      			  "https://scigraph.at.ispras.ru/research/*",
+      			  "https://scinoon.at.ispras.ru/research/*",
+      			  "https://scinoon.com/research/*"],
+      "js": [
+        "browser-polyfill.js", "types.js", "lib/jquery-3.2.1.min.js",
+        "ping.js", "rm_content.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["*://scholar.google.com/*",
+                  "*://scholar.google.ru/*"],
+      "include_globs": ["*://scholar.google.*/", "*scholar.google.*/scholar*", "*scholar.google.*/schhp*"],
+      "js": [
+        "browser-polyfill.js", "types.js", "lib/jquery-3.2.1.min.js",
+        "extractor.js", "google_scholar_content.js"
+      ],
+      "css": ["lib/bootstrap.min.css"]
+    },
+    {
+      "matches": ["*://www.semanticscholar.org/search?q=*"],
+      "include_globs": ["*://www.semanticscholar.*/", "*www.semanticscholar.*/search*"],
+      "js": [
+        "browser-polyfill.js", "types.js", "lib/jquery-3.2.1.min.js",
+        "extractor.js", "semantic_scholar_content.js"
+      ],
+      "css": ["lib/bootstrap.min.css"]
+    }
+  ],
+
+  "options_ui": {
+    "page": "options.html"
+  },
+
+  "web_accessible_resources": [
+    "scholar_styles.css",
+    "icons/add.png"
+  ],
+
+  "permissions": ["storage", "tabs"]
 
 }

@@ -1,44 +1,48 @@
-<!DOCTYPE html>
-<html lang="en">
-	<head>
-		<meta charset="UTF-8">
-		<script type="application/javascript" src="browser-polyfill.js"></script>
-		<script type="text/javascript" src="lib/jquery-3.2.1.min.js" defer></script>
-		<script type="text/javascript" src="lib/bootstrap.min.js" defer></script>
-		<link href="lib/bootstrap.min.css" rel="stylesheet">
-		<script type="text/javascript" src="types.js" defer></script>
-		<script type="text/javascript" src="options.js" defer></script>
-	</head>
-	<body>
-		<div class="header">
-			<div class="container">
-				<div class="page-header">
-					<h1>SciLocal. Options.</h1>
-				</div>
+<html>
+<head>
+<script type="application/javascript" src="browser-polyfill.js"></script>
+<script type="text/javascript" src="lib/jquery-3.2.1.min.js" defer></script>
+<script type="text/javascript" src="lib/bootstrap.min.js" defer></script>
+<link href="lib/bootstrap.min.css" rel="stylesheet">
+<script type="text/javascript" src="types.js" defer></script>
+</head>
+<body>
+	<div class="header">
+		<div class="container">
+			<div class="page-header">
+				<h1>Edit Options:</h1>
 			</div>
+		</div>
+	</div>
+	<br/>
+	<div class="container">
+		<div class="input-group">
+			<span class="input-group-addon" id="server">
+				SciLocal server address:
+			</span>
+			<select class="form-control" id="serverInput" aria-describedby="server">
+				<option value="https://scigraph.at.ispras.ru">scigraph</option>
+				<option value="https://scinoon.at.ispras.ru">scinoon</option>
+				<option value="https://scilocal.at.ispras.ru">scilocal</option>
+			</select>
+			<!-- <input type="text" class="form-control" placeholder="" id="serverInput" aria-describedby="server"> -->
 		</div>
 		<br/>
-		<div class="container">
-			<div class="input-group">
-				<span class="input-group-addon" id="server">
-					SciLocal server address:
-				</span>
-				<input type="text" class="form-control" placeholder="" id="serverInput" aria-describedby="server">
-			</div>
-			<br/>
-			<div class="input-group">
-				<span class="input-group-addon" id="mapname">
-					Research map name:
-				</span>
-				<input type="text" class="form-control" placeholder="" id="mapInput" aria-describedby="mapname">
-			</div>
-			<br/>
-			<div class="input-group">
-				<span class="input-group-addon" id="topcount">
-					Number of terms to extract:
-				</span> 
-				<input type="text" class="form-control" placeholder="" id="topCountInput" aria-describedby="topcount">
-			</div>
+		<div class="input-group">
+			<span class="input-group-addon" id="mapname">
+				Research map name:
+			</span>
+			<input type="text" class="form-control" placeholder="" id="mapInput" aria-describedby="mapname">
 		</div>
-	</body>
+		<br/>
+		<div class="input-group">
+			<span class="input-group-addon" id="topcount">
+				Number of terms to extract:
+			</span>
+			<input type="text" class="form-control" placeholder="" id="topCountInput" aria-describedby="topcount">
+		</div>
+		<br/>
+	</div>
+	<script type="text/javascript" src="options.js"></script>
+</body>
 </html>

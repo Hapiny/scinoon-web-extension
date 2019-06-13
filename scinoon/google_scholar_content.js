@@ -28,7 +28,7 @@ var baseTermLink = "http://" + window.location.hostname + "/scholar?q=";
     var articles = extractor.extract(document);
     console.log(articles);
 	browser.runtime.sendMessage({
-	    name: messages.success.RETURN_EXTRACTED,
+	    name: messages.RETURN_EXTRACTED,
 	    data: {
 	    	url : window.location.href,
 	    	articles : articles
@@ -47,7 +47,6 @@ function handleNormalizedData(message) {
 	
 	var normalizedArticlesStatus = message.data;
 	var articleBlocks = $("#gs_res_ccl_mid>.gs_r");
-	console.log(articleBlocks.length);
 	for (var index = 0; index < normalizedArticlesStatus.length; ++index) {
 	    var articleStatus = normalizedArticlesStatus[index];
 	    var articleId = articleStatus["article"]["id"];
@@ -79,7 +78,7 @@ function handleNormalizedData(message) {
 	        }
 	        button.click(articleId, function(event) {
 	        	browser.runtime.sendMessage({
-	        	    name: messages.success.SELECTED_ARTICLES,
+	        	    name: messages.SELECTED_ARTICLES,
 	        	    data: [event.data]
 	        	});
 	        	setAdded(this);
@@ -163,17 +162,17 @@ function handleExtractedTermsClusters(message) {
 // articles to research map
 browser.runtime.onMessage.addListener(function(message) {
 	switch (message.name) {
-		case messages.success.NORMALIZED_DATA: 
+		case messages.NORMALIZED_DATA: 
 			handleNormalizedData(message);
 			break;
-		case messages.success.EXTRACTED_TERMS_RESEARCH:
+		case messages.EXTRACTED_TERMS_RESEARCH:
 			handleExtractedTermsResearch(message);
 			break;
-		case messages.success.EXTRACTED_TERMS_CLUSTERS:
+		case messages.EXTRACTED_TERMS_CLUSTERS:
 			handleExtractedTermsClusters(message);
 			break;
 	}
 });
 
-browser.runtime.sendMessage({name: messages.success.GET_TERMS});
+browser.runtime.sendMessage({name: messages.GET_TERMS});
 createTermsPanel();

@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function() {
 	
-	var scilocalTabsQuery = {url: ["http://*/research/*", "https://scilocal.at.ispras.ru/research/*"]};
+	var scilocalTabsQuery = {url: ["http://*/research/*", "https://scigraph.at.ispras.ru/research/*"]};
 	
 	function onError(error) {
 		console.log(`Error: ${error}`);

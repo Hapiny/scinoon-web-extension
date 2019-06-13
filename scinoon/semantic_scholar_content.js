@@ -30,7 +30,7 @@ function ParseArticles(){
     console.log("beforeSendParsed");
     console.log(articles);
 	browser.runtime.sendMessage({
-	    name: messages.success.RETURN_EXTRACTED,
+	    name: messages.RETURN_EXTRACTED,
 	    data: {
 	    	url : window.location.href,
 	    	articles : articles
@@ -48,14 +48,13 @@ function handleNormalizedData(message) {
 	console.log("normalized data arrived");
 	
 	var normalizedArticlesStatus = message.data;
-    var articleBlocks = $('.search-result');
-    console.log(articleBlocks.length);
+	var articleBlocks = $('.search-result');
 	console.log("normalizedArticlesStatus", normalizedArticlesStatus);
 	for (var index = 0; index < normalizedArticlesStatus.length; ++index) {
 	    var articleStatus = normalizedArticlesStatus[index];
 	    var articleId = articleStatus["article"]["id"];
-	    console.log("articleId", articleId);
-	    console.log("articleIdSourceName", articleId.sourceName);
+	    // console.log("articleId", articleId);
+	    // console.log("articleIdSourceName", articleId.sourceName);
 	    if (articleId.sourceName == "ext-semantic-scholar") {
 	        var scholarId = articleId.privateId;
 			var blockFilter = "a[data-heap-paper-id=" + scholarId + "]";
@@ -72,9 +71,9 @@ function handleNormalizedData(message) {
 	        }
 
 	        if (!articleStatus["isViewed"]) {
-				console.log("!isViewed");
+						console.log("!isViewed");
 	        	var titleField = document.evaluate(".//div[@class='search-result-title']/a[@data-selenium-selector='title-link']", 
-					articleBlock[0], null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+						articleBlock[0], null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
 	        	var labelField = document.createElement('span');
 	        	labelField.innerHTML = "\u00A0\u00A0";
 	        	var label = document.createElement('span');
@@ -86,7 +85,7 @@ function handleNormalizedData(message) {
 	        }
 	        button.click(articleId, function(event) {
 	        	browser.runtime.sendMessage({
-	        	    name: messages.success.SELECTED_ARTICLES,
+	        	    name: messages.SELECTED_ARTICLES,
 	        	    data: [event.data]
 	        	});
 	        	setAdded(this);
@@ -174,29 +173,25 @@ $( function () {
 	console.log("scholarContentBegin");
 	InjectCSS();
 	console.log("GetTerms");
-	browser.runtime.sendMessage({name: messages.success.GET_TERMS});
+	browser.runtime.sendMessage({name: messages.GET_TERMS});
 	createTermsPanel();
 	
-	// For normalized article data arrived from server, initialize controls to attach
+		// For normalized article data arrived from server, initialize controls to attach
 	// articles to research map
-	browser.runtime.onMessage.addListener((message) => {
-        console.log(message);
+	browser.runtime.onMessage.addListener(function(message) {
 		switch (message.name) {
-			case messages.success.NORMALIZED_DATA: 
+			case messages.NORMALIZED_DATA: 
 				handleNormalizedData(message);
 				break;
-			case messages.success.EXTRACTED_TERMS_RESEARCH:
+			case messages.EXTRACTED_TERMS_RESEARCH:
 				handleExtractedTermsResearch(message);
 				break;
-			case messages.success.EXTRACTED_TERMS_CLUSTERS:
+			case messages.EXTRACTED_TERMS_CLUSTERS:
 				handleExtractedTermsClusters(message);
 				break;
 		}
 	});
-    // console.log(blocks.length);
-    // for(var i = 0; i <= blocks.length; i+=1) {
-    //     console.log(blocks[i]);
-    // }
+
 
 	var observer = new MutationObserver(function (mutations, me) {
 	  // `mutations` is an array of mutations that occurred

@@ -145,19 +145,7 @@ var extractor = {
 		
 		var result = [];
 		var blocks = doc.getElementsByClassName("search-result");
-
-		console.log(blocks);
-		// var more_authors_btns = document.getElementsByClassName("more-authors-label");
-		// console.log(more_authors_btns.length);
-		// for (let btn of more_authors_btns) {
-		// 	btn.click();
-		// }
-		
-		// var more_abstract_btns = document.getElementsByClassName("more mod-clickable");
-		// console.log(more_abstract_btns.length);
-		// for (let btn of more_abstract_btns) {
-		// 	btn.click();
-		// }		
+			
 		for(var i = 0; i <= blocks.length-1; i+=1) {
 			
 			if (blocks[i].getElementsByClassName("more mod-clickable")[0] != undefined) { 
@@ -176,11 +164,9 @@ var extractor = {
 				author["ids"] = [];
 				article["authors"].push(author);
 			}
-			
-			
-			
+						
 			var paperLink = blocks[i].getElementsByClassName("icon-button paper-link")[0];
-			if(paperLink.innerText.search("View Paper") != -1) {
+			if(paperLink && paperLink.innerText.search("View Paper") != -1) {
 				article["textType"] = "pdf";
 				article["textUrl"] = paperLink.getAttribute("href");
 			}
@@ -209,10 +195,11 @@ var extractor = {
 
 	extract : function(doc) {
 		// TODO: switch depending on URL
-		if (doc.location['href'].search("scholar.google")!= -1 ){
+		console.log(doc);	
+		if (doc.location['href'].search("scholar.google") !== -1 ) {
 			return this.GSExtractor(doc);
 		}
-		else if (doc.location['href'].search("semanticscholar")!= -1 ){
+		else if (doc.location['href'].search("semanticscholar") !== -1 ) {
 			return this.SSExtractor(doc);
 		}
 	}
