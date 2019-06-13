@@ -8,7 +8,7 @@
 // ==/UserScript==
 
 var $ = window.$.noConflict(true);
-var searchString = document.getElementsByClassName("input form-input")[0].getAttribute("value");
+var searchString = document.getElementsByClassName("input form-input")[0].value;
 var baseTermLink = "http://" + window.location.hostname + "/search?q=";
 var addLock = false;
 
@@ -49,12 +49,9 @@ function handleNormalizedData(message) {
 	
 	var normalizedArticlesStatus = message.data;
 	var articleBlocks = $('.search-result');
-	console.log("normalizedArticlesStatus", normalizedArticlesStatus);
 	for (var index = 0; index < normalizedArticlesStatus.length; ++index) {
 	    var articleStatus = normalizedArticlesStatus[index];
 	    var articleId = articleStatus["article"]["id"];
-	    // console.log("articleId", articleId);
-	    // console.log("articleIdSourceName", articleId.sourceName);
 	    if (articleId.sourceName == "ext-semantic-scholar") {
 	        var scholarId = articleId.privateId;
 			var blockFilter = "a[data-heap-paper-id=" + scholarId + "]";
@@ -71,17 +68,14 @@ function handleNormalizedData(message) {
 	        }
 
 	        if (!articleStatus["isViewed"]) {
-						console.log("!isViewed");
-	        	var titleField = document.evaluate(".//div[@class='search-result-title']/a[@data-selenium-selector='title-link']", 
-						articleBlock[0], null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-	        	var labelField = document.createElement('span');
-	        	labelField.innerHTML = "\u00A0\u00A0";
+	        	// var titleField = document.evaluate(".//div[@class='search-result-title']/a[@data-selenium-selector='title-link']", 
+                // 		articleBlock[0], null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+                var titleField = articleBlock[0].getElementsByTagName("a")[0];
 	        	var label = document.createElement('span');
 	        	label.className = "label label-info";
-	        	label.innerHTML = "New";
-	        	labelField.appendChild(label);
-	        	titleField.appendChild(labelField);
-	        	console.log("\"new\"Added");
+				label.innerHTML = "New";
+				label.style.marginLeft = "5px";
+	        	titleField.appendChild(label);
 	        }
 	        button.click(articleId, function(event) {
 	        	browser.runtime.sendMessage({
@@ -168,15 +162,12 @@ function handleExtractedTermsClusters(message) {
 }
 
 
-$( function () {
-
-	console.log("scholarContentBegin");
+let scholarStarter = $(() => {
 	InjectCSS();
-	console.log("GetTerms");
 	browser.runtime.sendMessage({name: messages.GET_TERMS});
 	createTermsPanel();
 	
-		// For normalized article data arrived from server, initialize controls to attach
+    // For normalized article data arrived from server, initialize controls to attach
 	// articles to research map
 	browser.runtime.onMessage.addListener(function(message) {
 		switch (message.name) {
@@ -193,9 +184,9 @@ $( function () {
 	});
 
 
+	// `mutations` is an array of mutations that occurred
+	// `me` is the MutationObserver instance
 	var observer = new MutationObserver(function (mutations, me) {
-	  // `mutations` is an array of mutations that occurred
-	  // `me` is the MutationObserver instance
 	  var canvas = document.getElementsByClassName('search-result');
 	  if (canvas != null && canvas.length) {
 			var buttonsPresent = document.getElementsByClassName("add_to_rm_button") && document.getElementsByClassName("add_to_rm_button").length > 0
@@ -215,9 +206,6 @@ $( function () {
 	  childList: true,
 	  subtree: true
 	});
-	
-	console.log("scholarContentEnd");
-	
 });
 
 

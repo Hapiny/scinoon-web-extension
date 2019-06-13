@@ -8,22 +8,25 @@
 // ==/UserScript==
 
 var $ = window.$.noConflict(true);
-var searchString = document.evaluate("//div[@class='gs_in_txtw gs_in_txtb gs_in_acw']/input[@class='gs_in_txt gs_in_ac']", 
-		document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.value;
+// var searchString = document.evaluate("//div[@class='gs_in_txtw gs_in_txtb gs_in_acw']/input[@class='gs_in_txt gs_in_ac']", 
+// 		document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.value;
+var searchString = document.getElementById("gs_hdr_tsi").value;
 var baseTermLink = "http://" + window.location.hostname + "/scholar?q=";
+var addLock = false;
 
 // Inject custom scholar css
-(function() {
+
+function InjectCSS() {
 	var scholarCssLink = $("<link>", {
         rel: "stylesheet",
         type: "text/css",
         href: browser.runtime.getURL('scholar_styles.css')
     });
     scholarCssLink.appendTo("head");
-})();
+};
 
 // Parse article data and send it to background
-(function () {
+function ParseArticles() {
     console.log("obtaining url and dom...");
     var articles = extractor.extract(document);
     console.log(articles);
@@ -34,7 +37,7 @@ var baseTermLink = "http://" + window.location.hostname + "/scholar?q=";
 	    	articles : articles
 	    }
 	});
-})();
+};
 
 function handleNormalizedData(message) {
 	
@@ -66,15 +69,14 @@ function handleNormalizedData(message) {
 	        	setAdded(button[0]);
 	        }
 	        if (!articleStatus["isViewed"]) {
-	        	var titleField = document.evaluate("./div[@class='gs_ri']/h3[@class='gs_rt']", 
-		        		articleBlock[0], null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-	        	var labelField = document.createElement('span');
-	        	labelField.innerHTML = "\u00A0\u00A0";
+	        	// var titleField = document.evaluate("./div[@class='gs_ri']/h3[@class='gs_rt']", 
+						// articleBlock[0], null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+				var titleField = articleBlock[0].getElementsByClassName("gs_rt")[0];
 	        	var label = document.createElement('span');
 	        	label.className = "label label-info";
-	        	label.innerHTML = "New";
-	        	labelField.appendChild(label);
-	        	titleField.appendChild(labelField);
+				label.innerHTML = "New";
+				label.style.marginLeft = "5px";
+	        	titleField.appendChild(label);
 	        }
 	        button.click(articleId, function(event) {
 	        	browser.runtime.sendMessage({
@@ -86,6 +88,7 @@ function handleNormalizedData(message) {
 	        articleBlock.append(button);
 	    }
 	}
+	addLock = false;
 }
 
 function createTermsPanel() {
@@ -112,12 +115,16 @@ function createTermsPanel() {
 
 function addTermToList(term, termsList) {
 	var li = document.createElement('li');
-	li.innerHTML = "<span><a href='" + baseTermLink + searchString + "+" + term + "'>" +
-					 "<img src=" + browser.extension.getURL("/icons/add.png") + " alt='+' style='vertical-align: -25%'/>" +
-				   "</a>" +
-				   "&nbsp;<span class='term_text'>" +
-				     "<a href='http://" + window.location.hostname + "/scholar?q=" + term + "'>" + term + "</a>" +
-				   "</span></span>";
+	li.innerHTML = 
+		`<span>
+			<a href='${baseTermLink + searchString + "+" + term}'>
+				<img src='${browser.extension.getURL("/icons/add.png")}' alt='+' style='vertical-align: -25%'/>
+			</a>
+			&nbsp;
+			<span class='term_text'>
+				<a href='http://${window.location.hostname}/scholar?q=${term}'>${term}</a>
+			</span>
+		</span>`;
 	li.className = "term_list_item";
 	termsList.appendChild(li);
 }
@@ -158,21 +165,25 @@ function handleExtractedTermsClusters(message) {
 	}
 }
 
-// For normalized article data arrived from server, initialize controls to attach
-// articles to research map
-browser.runtime.onMessage.addListener(function(message) {
-	switch (message.name) {
-		case messages.NORMALIZED_DATA: 
-			handleNormalizedData(message);
-			break;
-		case messages.EXTRACTED_TERMS_RESEARCH:
-			handleExtractedTermsResearch(message);
-			break;
-		case messages.EXTRACTED_TERMS_CLUSTERS:
-			handleExtractedTermsClusters(message);
-			break;
-	}
+let scholarStarter = $(() => {
+	InjectCSS();
+	browser.runtime.sendMessage({name: messages.GET_TERMS});
+	createTermsPanel();
+	
+    // For normalized article data arrived from server, initialize controls to attach
+	// articles to research map
+	browser.runtime.onMessage.addListener(function(message) {
+		switch (message.name) {
+			case messages.NORMALIZED_DATA: 
+				handleNormalizedData(message);
+				break;
+			case messages.EXTRACTED_TERMS_RESEARCH:
+				handleExtractedTermsResearch(message);
+				break;
+			case messages.EXTRACTED_TERMS_CLUSTERS:
+				handleExtractedTermsClusters(message);
+				break;
+		}
+	});
+	ParseArticles();
 });
-
-browser.runtime.sendMessage({name: messages.GET_TERMS});
-createTermsPanel();

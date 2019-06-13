@@ -37,8 +37,13 @@ var extractor = {
 		var citedArticleGlobalPath = "//*[@id='gs_res_ccl_top']/div/h2/a/@href";
 
 		// For GS pages of citing articles extract cited article clusterId
-		var citedArticleHref = doc.evaluate(citedArticleGlobalPath, doc, null,
-				XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+		var citedArticleHref = doc.evaluate(
+			citedArticleGlobalPath, 
+			doc, 
+			null,
+			XPathResult.FIRST_ORDERED_NODE_TYPE, 
+			null).singleNodeValue;
+
 		var citedArticleClusterId = null;
 		if (citedArticleHref != null) {
 			citedArticleClusterId = /cluster=(\d*)/.exec(citedArticleHref.value)[1];
@@ -166,7 +171,7 @@ var extractor = {
 			}
 						
 			var paperLink = blocks[i].getElementsByClassName("icon-button paper-link")[0];
-			if(paperLink && paperLink.innerText.search("View Paper") != -1) {
+			if(paperLink &&  paperLink.innerText.search("View Paper") != -1) {
 				article["textType"] = "pdf";
 				article["textUrl"] = paperLink.getAttribute("href");
 			}
@@ -195,7 +200,6 @@ var extractor = {
 
 	extract : function(doc) {
 		// TODO: switch depending on URL
-		console.log(doc);	
 		if (doc.location['href'].search("scholar.google") !== -1 ) {
 			return this.GSExtractor(doc);
 		}

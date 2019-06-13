@@ -35,7 +35,8 @@ var sciserver = function() {
 					url : base + queryAddr(url) + data.map,
 					data : articles,
 					success : function(data) {
-						console.log("normalized data arrives: " + data);
+						console.log("normalized data arrives: ");
+						console.log(data);
 						// TODO PERF: Avoid conversion to/from text
 						browser.tabs.sendMessage(id, {
 							name: messages.NORMALIZED_DATA,
