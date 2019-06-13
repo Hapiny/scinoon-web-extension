@@ -14,7 +14,7 @@ const scilocalTabsQuery = {
 function queryAddr(url) {
 	let resultAddr = "";
 	if (url.search("semanticscholar") !== -1) {
-		resultAddr = "/scholar/";
+		resultAddr = "/ext/";
 	}	
 	else if (url.search("scholar.google") !== -1) {
 		resultAddr = "/scholar/";
