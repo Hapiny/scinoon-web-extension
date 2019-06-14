@@ -165,7 +165,7 @@ function handleNormalizedData(message) {
                 let titleField = scholar.titleFieldSeclector(articleBlock[0]);
                 let label = document.createElement('span');
                 
-	        	label.className = "label label-info";
+	        	label.className = "btn btn-info btn-sm";
 				label.innerHTML = "New";
 				label.style.marginLeft = "5px";
 	        	titleField.appendChild(label);
@@ -209,10 +209,12 @@ let scholarStarter = $(() => {
         parseSearchResult();
     } else {
         let observer = new MutationObserver(function (mutations, me) {
+			// console.log(mutations);
 			let searchResult = document.getElementsByClassName("search-result");
             if (searchResult !== undefined && searchResult.length > 0) {
 				let buttons = document.getElementsByClassName("add_to_rm_button");
                 let buttonsPresent = buttons && buttons.length > 0
+				console.log(buttons.length, searchResult.length);
                 if (!buttonsPresent && !waitPageLoading) {
 					waitPageLoading = true;
 					parseSearchResult();
@@ -220,7 +222,19 @@ let scholarStarter = $(() => {
 				// stop observer
 				// me.disconnect();
 				// return;
-            }
+			}
+			
+			let titleField = document.querySelector('[data-selenium-selector="paper-detail-title"]');
+			if (titleField !== null && !waitPageLoading) {
+				waitPageLoading = true;
+				parseSearchResult();
+				let addBtn = document.createElement("button");
+				addBtn.className = "btn btn-primary";
+				addBtn.textContent = "Add to research map";
+				titleField.appendChild(addBtn);
+				let title = titleField.innerText;
+				console.log(title);
+			}
         });
         // start observing
         observer.observe(document, {
