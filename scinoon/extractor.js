@@ -137,7 +137,6 @@ var extractor = {
 		} catch (e) {
 			console.log(e);
 		}
-		console.log(result[0]);
 		return result;
 	},
 	
@@ -212,7 +211,6 @@ var extractor = {
 			}
 			extractedArticles.push(article);
 		}
-		console.log(extractedArticles[0])
 		return extractedArticles;
 	},
 	

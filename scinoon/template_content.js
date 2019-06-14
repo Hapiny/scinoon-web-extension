@@ -16,8 +16,8 @@ function injectLocalCss() {
         rel: "stylesheet",
         type: "text/css",
         href: browser.runtime.getURL('lib/scholar_styles.css')
-    });
-    scholarCssLink.appendTo("head");
+	});
+	scholarCssLink.appendTo("head");
 };
 
 function parseSearchResult() {
@@ -37,31 +37,50 @@ function createTermsPanel() {
 	termsPanel.id = "terms_panel"
 	
 	var titleBox = document.createElement('div');
-	var panelTitle = document.createElement('p');
-	panelTitle.innerHTML = "<center><h3>Terms from current research</h3></center>";
-	titleBox.appendChild(panelTitle);
+	titleBox.textContent = "Terms from current research";
+	titleBox.className = "btn btn-lg btn-dark";
+	titleBox.id = "terms_panel_draggable"
+	
+	var centerBtn = document.createElement("center");
+	var openTermsBtn = document.createElement('div');
+	openTermsBtn.id = "open-btn";
+	openTermsBtn.textContent = "Show Terms";
+	openTermsBtn.className = "btn btn-primary";
+	openTermsBtn.style.display = "table-cell";
+
+	centerBtn.appendChild(openTermsBtn);
+	titleBox.appendChild(centerBtn);
 	termsPanel.appendChild(titleBox);
 	
 	var termsBox = document.createElement('div');
 	termsBox.id = "termsBox";
+	termsBox.style.display = "none";
 	termsBox.className = "scholar_terms_box";
 	
 	var researchTermsBox = document.createElement('div');
 	researchTermsBox.id = "researchTermsBox";
 	
-	var clustersTermsBox = document.createElement('div');
-	clustersTermsBox.id = "clustersTermsBox";
 	
 	termsBox.appendChild(researchTermsBox);
-	termsBox.appendChild(clustersTermsBox);
 	termsPanel.appendChild(termsBox);
 	
 	document.body.appendChild(termsPanel);
+	openTermsBtn.addEventListener("click", () => {
+		var termsBoxDisplay = $("#termsBox")[0].style.display;
+		if (termsBoxDisplay === "none") {
+			$("#termsBox")[0].style.display = "block";
+			$("#open-btn")[0].innerText = "Close Terms";
+		} else {
+			$("#termsBox")[0].style.display = "none";
+			$("#open-btn")[0].innerText = "Show Terms";
+		}
+	});
+	makeDraggableElement(termsPanel);
 }
 
 function addTermsTitle(text, termsBox) {
 	var title = document.createElement('p');
-	title.innerHTML = `<center><h4>${text}</h4></center>`;
+	title.innerHTML = `<center><h3>${text}</h3></center>`;
 	termsBox.appendChild(title);
 }
 
@@ -104,10 +123,13 @@ function handleExtractedTermsResearch(message) {
 }
 
 function handleExtractedTermsClusters(message) {
-	let termsBox = document.getElementById('clustersTermsBox');
+	let termsBox = document.getElementById("termsBox");
+	var clustersTermsBox = document.createElement('div');
+	clustersTermsBox.id = "clustersTermsBox";
+	termsBox.appendChild(clustersTermsBox);
 	let clusterWithTermsList = message.data;
 	for (let clusterWithTerms of clusterWithTermsList) {
-		addTermsGroup(clusterWithTerms.clName, clusterWithTerms.terms, termsBox);
+		addTermsGroup(clusterWithTerms.clName, clusterWithTerms.terms, clustersTermsBox);
 	}
 }
 

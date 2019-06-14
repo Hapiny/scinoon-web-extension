@@ -1,4 +1,4 @@
-$(document).off(".data-api");
+// $(document).off(".data-api");
 
 document.addEventListener("set default map", function(event) {
 	browser.runtime.sendMessage({
