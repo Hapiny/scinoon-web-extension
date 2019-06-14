@@ -1,0 +1,27 @@
+body {
+    min-width: 600px;
+    min-height: 600px;
+    font-family: 'Encode Sans Expanded', sans-serif;
+}
+
+#icon {
+    width: 64px;
+    height: 64px;
+}
+
+.card-title {
+    display: inline;
+}
+
+.container {
+    text-align: center;
+}
+
+#server-icon, #rm-icon, #terms-icon {
+    font-size: 25px;
+}
+
+.card {
+    border-radius: 20px;
+    margin-top: 10px;
+}

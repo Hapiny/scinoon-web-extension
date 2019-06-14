@@ -15,7 +15,7 @@ function injectLocalCss() {
 	var scholarCssLink = $("<link>", {
         rel: "stylesheet",
         type: "text/css",
-        href: browser.runtime.getURL('scholar_styles.css')
+        href: browser.runtime.getURL('lib/scholar_styles.css')
     });
     scholarCssLink.appendTo("head");
 };
@@ -33,29 +33,30 @@ function parseSearchResult() {
 
 function createTermsPanel() {
 	var termsPanel = document.createElement('div');
-    termsPanel.className = "scholar_terms_panel";
-    
+	termsPanel.className = "scholar_terms_panel";
+	termsPanel.id = "terms_panel"
+	
 	var titleBox = document.createElement('div');
 	var panelTitle = document.createElement('p');
 	panelTitle.innerHTML = "<center><h3>Terms from current research</h3></center>";
 	titleBox.appendChild(panelTitle);
 	termsPanel.appendChild(titleBox);
-    
-    var termsBox = document.createElement('div');
+	
+	var termsBox = document.createElement('div');
 	termsBox.id = "termsBox";
 	termsBox.className = "scholar_terms_box";
-    
-    var researchTermsBox = document.createElement('div');
+	
+	var researchTermsBox = document.createElement('div');
 	researchTermsBox.id = "researchTermsBox";
-    
-    var clustersTermsBox = document.createElement('div');
+	
+	var clustersTermsBox = document.createElement('div');
 	clustersTermsBox.id = "clustersTermsBox";
 	
 	termsBox.appendChild(researchTermsBox);
 	termsBox.appendChild(clustersTermsBox);
 	termsPanel.appendChild(termsBox);
-    
-    document.body.appendChild(termsPanel);
+	
+	document.body.appendChild(termsPanel);
 }
 
 function addTermsTitle(text, termsBox) {
@@ -116,12 +117,12 @@ function handleNormalizedData(message) {
 		button.disabled = true;
     }
     
-	var normalizedArticlesStatus = message.data;
-    var articleBlocks = $(scholar.articleBlocksSelector);
+	let normalizedArticlesStatus = message.data;
+    let articleBlocks = $(scholar.articleBlocksSelector);
 
-    for (var index = 0; index < normalizedArticlesStatus.length; ++index) {
-        var articleStatus = normalizedArticlesStatus[index];
-        var articleId = articleStatus["article"]["id"];
+    for (let index = 0; index < normalizedArticlesStatus.length; ++index) {
+        let articleStatus = normalizedArticlesStatus[index];
+        let articleId = articleStatus["article"]["id"];
         
         if (articleId.sourceName === scholar.articleSourceName) {
             let scholarId = articleId.privateId;
@@ -179,22 +180,24 @@ let scholarStarter = $(() => {
 				handleExtractedTermsClusters(message);
 				break;
             }
-        });
+		}
+	);
+
     if (scholar.name !== "semantic") {
         parseSearchResult();
     } else {
         let observer = new MutationObserver(function (mutations, me) {
-            let canvas = document.getElementsByClassName('search-result');
-            if (canvas != null && canvas.length) {
-                let buttons = document.getElementsByClassName("add_to_rm_button");
+			let searchResult = document.getElementsByClassName("search-result");
+            if (searchResult !== undefined && searchResult.length > 0) {
+				let buttons = document.getElementsByClassName("add_to_rm_button");
                 let buttonsPresent = buttons && buttons.length > 0
                 if (!buttonsPresent && !waitPageLoading) {
-                      waitPageLoading = true;
-                      parseSearchResult();
-                    }
-                    // stop observer
-                    // me.disconnect();
-                    // return;
+					waitPageLoading = true;
+					parseSearchResult();
+				}
+				// stop observer
+				// me.disconnect();
+				// return;
             }
         });
         // start observing

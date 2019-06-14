@@ -157,9 +157,13 @@ var extractor = {
 			
 			let authorsElements = block.getElementsByClassName("author-list__link");
 			for(let elem of authorsElements) {
+				let authorUrl = elem.getAttribute("href");
 				let author = {
 					fullName : elem.innerText, 
-					ids : []
+					ids : [{
+						id  : authorUrl.split("/").pop(),
+						src : window.location.hostname + authorUrl
+					}]
 				};
 				article.authors.push(author);
 			}
@@ -170,13 +174,14 @@ var extractor = {
 				moreAuthorsButton.click();
 			}
 			
-			////////////////////////////////////////////////////////////////////////////////////
 			let paperLink = block.getElementsByClassName("icon-button paper-link")[0];
-			if(paperLink &&  paperLink.innerText.search("View Paper") != -1) {
-				article["textType"] = "pdf";
+			let isPdfAvailable = paperLink.getAttribute("data-heap-direct-pdf-link");
+			if(paperLink) {
 				article["textUrl"] = paperLink.getAttribute("href");
+				if (isPdfAvailable === "true") {
+					article["textType"] = "pdf";
+				}
 			}
-			////////////////////////////////////////////////////////////////////////////////////
 			
 			let titleElement = block.getElementsByClassName("search-result-title")[0];
 			let info = {
@@ -205,10 +210,9 @@ var extractor = {
 			if (moreAbstractButton) {
 				moreAbstractButton.click();
 			}
-
 			extractedArticles.push(article);
 		}
-		
+		console.log(extractedArticles[0])
 		return extractedArticles;
 	},
 	

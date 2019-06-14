@@ -1,12 +1,13 @@
 {
     "manifest_version": 2,
     "name": "Scinoon Local GS Extension",
-    "version": "2.0.0.90",
+    "version": "2.0.0.91",
 
     "icons": {
         "128": "icons/icon128.png",
-        "48": "icons/icon48.png",
-        "16": "icons/button.png"
+        "48" : "icons/icon48.png",
+        "32" : "icons/icon32.png",
+        "16" : "icons/button.png"
     },
 
     "background": {
@@ -38,25 +39,13 @@
         {
             "matches": [
                 "*://scholar.google.com/*",
-                "*://scholar.google.ru/*"
+                "*://scholar.google.ru/*",
+                "*://www.semanticscholar.org/*"
             ],
             "include_globs": [
                 "*://scholar.google.*/", 
                 "*scholar.google.*/scholar*", 
-                "*scholar.google.*/schhp*"
-            ],
-            "js": [
-                "browser-polyfill.js", 
-                "types.js", 
-                "lib/jquery-3.2.1.min.js",
-                "extractor.js", 
-                "template_content.js"
-            ],
-            "css": ["lib/bootstrap.min.css"]
-        },
-        {
-            "matches": ["*://www.semanticscholar.org/search?q=*"],
-            "include_globs": [
+                "*scholar.google.*/schhp*",
                 "*://www.semanticscholar.*/", 
                 "*www.semanticscholar.*/search*"
             ],
@@ -72,11 +61,12 @@
     ],
 
     "options_ui": {
-        "page": "options.html"
+        "page"          : "options.html",
+        "open_in_tab"   : false
     },
 
     "web_accessible_resources": [
-        "scholar_styles.css",
+        "lib/scholar_styles.css",
         "icons/add.png"
     ],
 

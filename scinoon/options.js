@@ -59,11 +59,21 @@ document.addEventListener("DOMContentLoaded", function() {
 		});
 	})();
 	
+	// (function() {
+	// 	let icon = document.getElementById("icon");
+	// 	icon.style.height = "64px";
+	// 	icon.style.width = "64px";
+
+	// 	let titleField = document.getElementById("icon-and-name-wrapper");
+	// 	let nameSpan = titleField.getElementsByTagName("span")[0];
+	// 	nameSpan.style.fontSize = "50px"; 
+	// })();
+
 	browser.runtime.onMessage.addListener(function(message) {
 		if (message.name == messages.SET_DEFAULT_MAP) {
 			console.log("SET_DEFAULT_MAP catched by options");
 			document.getElementById("mapInput").value = message.data.map;
-			document.getElementById("serverInput").value = event.data.origin;
+			document.getElementById("serverInput").value = message.data.origin;
 		}
 	});
 })
