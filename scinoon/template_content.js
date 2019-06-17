@@ -32,12 +32,15 @@ function parseSearchResult() {
 };
 
 function createTermsPanel() {
+	if (document.getElementById("terms_panel") !== null) {
+		return;
+	}
 	var termsPanel = document.createElement('div');
 	termsPanel.className = "scholar_terms_panel";
 	termsPanel.id = "terms_panel"
 	
 	var titleBox = document.createElement('div');
-	titleBox.textContent = "Terms from current research";
+	titleBox.textContent = "Terms from current research map";
 	titleBox.className = "btn btn-lg btn-dark";
 	titleBox.id = "terms_panel_draggable"
 	
@@ -176,70 +179,99 @@ function handleNormalizedData(message) {
 	        	    data: [event.data]
 	        	});
 	        	setAdded(this);
-	        });
-            articleBlock.append(button);
+			});
+			if (document.getElementById(`add_to_rm_${scholarId}`) === null) {
+				articleBlock.append(button);
+			}
         }
     }
     waitPageLoading = false;
 }
 
-let scholarStarter = $(() => {
-	injectLocalCss();
-	browser.runtime.sendMessage({name: messages.GET_TERMS});
-	createTermsPanel();
-	
-    // For normalized article data arrived from server, initialize controls to attach
-	// articles to research map
-	browser.runtime.onMessage.addListener(function(message) {
-        switch (message.name) {
-            case messages.NORMALIZED_DATA: 
-                handleNormalizedData(message);
-                break;
-			case messages.EXTRACTED_TERMS_RESEARCH:
-                handleExtractedTermsResearch(message);
-				break;
-			case messages.EXTRACTED_TERMS_CLUSTERS:
-				handleExtractedTermsClusters(message);
-				break;
-            }
-		}
-	);
 
-    if (scholar.name !== "semantic") {
-        parseSearchResult();
-    } else {
-        let observer = new MutationObserver(function (mutations, me) {
-			// console.log(mutations);
-			let searchResult = document.getElementsByClassName("search-result");
-            if (searchResult !== undefined && searchResult.length > 0) {
-				let buttons = document.getElementsByClassName("add_to_rm_button");
-                let buttonsPresent = buttons && buttons.length > 0
-				console.log(buttons.length, searchResult.length);
-                if (!buttonsPresent && !waitPageLoading) {
-					waitPageLoading = true;
+browser.runtime.sendMessage({name: messages.GET_TERMS});
+browser.runtime.onMessage.addListener(function(message) {
+	switch (message.name) {
+		case messages.NORMALIZED_DATA: 
+			handleNormalizedData(message);
+			break;
+		case messages.EXTRACTED_TERMS_RESEARCH:
+			handleExtractedTermsResearch(message);
+			break;
+		case messages.EXTRACTED_TERMS_CLUSTERS:
+			handleExtractedTermsClusters(message);
+			break;
+		}
+	}
+);
+
+injectLocalCss();
+createTermsPanel();
+if (scholar.name !== "semantic") {
+	parseSearchResult();
+} else {
+	window.onload = () => {
+		console.log("LOADED");
+		let urlParts = window.location.href.split("/");
+		if (urlParts.indexOf("paper") !== -1) {
+			let article = parseArticleOnPage();
+			console.log(article);
+		}
+	}
+
+	let observerProps = {
+		childList: true,
+		subtree: true,
+		attributeFilter: ['style']
+	}
+
+	let observer = new MutationObserver((mutations, obs) => {
+		mutations.forEach((mutation) => {
+			if (mutation.target.tagName === "TITLE") {
+				let newTitleName = mutation.target.innerText;
+				console.log(`New title "${newTitleName}"`);
+				if (window.location.href.search("/search") !== -1) {
 					parseSearchResult();
+				} else if (window.location.href.search("/paper/") !== -1) {
+					let article = parseArticleOnPage();
+					console.log(article);
 				}
-				// stop observer
-				// me.disconnect();
-				// return;
 			}
-			
-			let titleField = document.querySelector('[data-selenium-selector="paper-detail-title"]');
-			if (titleField !== null && !waitPageLoading) {
-				waitPageLoading = true;
-				parseSearchResult();
-				let addBtn = document.createElement("button");
-				addBtn.className = "btn btn-primary";
-				addBtn.textContent = "Add to research map";
-				titleField.appendChild(addBtn);
-				let title = titleField.innerText;
-				console.log(title);
-			}
-        });
-        // start observing
-        observer.observe(document, {
-            childList: true,
-            subtree: true
-        });
-    }
-});
+		});
+	});
+	observer.observe(document, observerProps);
+}
+
+
+// let observer = new MutationObserver(function (mutations, obs) {
+// 	if (document.getElementsByClassName("loading-controls").length > 0) {
+// 		console.log("LOADER APPEARS");
+// 	}
+// 	let searchResult = document.getElementsByClassName("search-result");
+//     if (searchResult !== undefined && searchResult.length > 0) {
+// 		let buttons = document.getElementsByClassName("add_to_rm_button");
+//         let buttonsPresent = buttons && buttons.length > 0;
+// 		// console.log(buttons.length, searchResult.length);
+//         if (!buttonsPresent && !waitPageLoading) {
+// 			waitPageLoading = true;
+// 			parseSearchResult();
+// 		}
+// 		// stop observer
+// 		// obs.disconnect();
+// 		// return;
+// 	}
+// 	console.log(obs.takeRecords());
+// 	// let titleField = document.querySelector('[data-selenium-selector="paper-detail-title"]');
+// 	// if (titleField !== null && !waitPageLoading) {
+// 	// 	waitPageLoading = true;
+// 	// 	parseSearchResult();
+// 	// 	let addBtn = document.createElement("button");
+// 	// 	addBtn.className = "btn btn-primary";
+// 	// 	addBtn.textContent = "Add to research map";
+// 	// 	titleField.appendChild(addBtn);
+// 	// 	let title = titleField.innerText;
+// 	// 	console.log(title);
+// 	// }
+// });
+//     }
+// });

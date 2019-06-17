@@ -47,11 +47,13 @@
                 "*scholar.google.*/scholar*", 
                 "*scholar.google.*/schhp*",
                 "*://www.semanticscholar.*/", 
-                "*www.semanticscholar.*/search*"
+                "*www.semanticscholar.*/search*",
+                "*://www.semanticscholar.org/paper/*"
             ],
             "js": [
                 "browser-polyfill.js", 
                 "types.js", 
+                "semantic_utils.js",
                 "lib/jquery-3.2.1.min.js",
                 "extractor.js", 
                 "template_content.js"
