@@ -83,6 +83,7 @@ function createTermsPanel() {
 
 function createAddButtons() {
 	let articleBlocks = $(scholar.articleBlocksSelector);
+	console.log(articleBlocks);
 	for (let index = 0; index < articleBlocks.length; index++) {
 		let bootstrapTag = document.createElement("div");
 		bootstrapTag.className = "bootstrap";
@@ -93,8 +94,29 @@ function createAddButtons() {
 		button.textContent = "Loading...";
 		bootstrapTag.appendChild(button);
 
-		if (document.getElementById(`add_to_rm_${index}`) === null) {
+		if (articleBlocks[index].getElementsByClassName("add_to_rm_button").length === 0) {
 			articleBlocks[index].append(bootstrapTag);
+		}
+	}
+}
+
+function addButtonOnArticlePage() {
+	let btnField = document.getElementsByClassName("flex-container flex-wrap flex-paper-actions-group alternate-sources");
+	if (btnField.length) {
+		btnField = btnField[0];
+		let bootstrapTag = document.createElement("div");
+		bootstrapTag.className = "bootstrap";
+		let button = document.createElement("button");
+		button.id = `add_to_rm_${100500}`;
+		button.type = "button";
+		button.style.marginTop = "10px";
+		button.style.marginLeft = "10px";
+		button.className = "btn btn-primary btn-sm add_to_rm_button";
+		button.textContent = "Loading...";
+		bootstrapTag.appendChild(button);
+
+		if (document.getElementById(`add_to_rm_${100500}`) === null) {
+			btnField.append(bootstrapTag);
 		}
 	}
 }
@@ -228,6 +250,7 @@ if (scholar.name !== "semantic") {
 		if (urlParts.indexOf("paper") !== -1) {
 			let article = parseArticleOnPage();
 			console.log(article);
+			addButtonOnArticlePage();
 		}
 	}
 
@@ -248,6 +271,7 @@ if (scholar.name !== "semantic") {
 				} else if (window.location.href.search("/paper/") !== -1) {
 					let article = parseArticleOnPage();
 					console.log(article);
+					addButtonOnArticlePage();
 				}
 			}
 		});
