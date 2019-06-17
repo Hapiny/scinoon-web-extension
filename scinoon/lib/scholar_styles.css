@@ -21,7 +21,7 @@
 .scholar_terms_panel {
   position: fixed;
   top: 20%;
-  left: 80%;
+  left: 75%;
   z-index: 100;
 }
 
@@ -54,4 +54,5 @@
 
 .bootstrap {
   background: inherit;
+  display: inline;
 }

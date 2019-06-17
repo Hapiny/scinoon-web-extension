@@ -83,7 +83,6 @@ function createTermsPanel() {
 
 function createAddButtons() {
 	let articleBlocks = $(scholar.articleBlocksSelector);
-	console.log(articleBlocks);
 	for (let index = 0; index < articleBlocks.length; index++) {
 		let bootstrapTag = document.createElement("div");
 		bootstrapTag.className = "bootstrap";
@@ -178,7 +177,7 @@ function handleExtractedTermsClusters(message) {
 
 function handleNormalizedData(message) {
     function setAdded(button) {
-		button.textContent = "Added!"
+		button.innerText = "Added!"
 		button.disabled = true;
     }
     
@@ -193,20 +192,25 @@ function handleNormalizedData(message) {
             let blockFilter = scholar.getBlockFilter(scholarId);
 
 			let articleBlock = articleBlocks.has(blockFilter);
-			let button = document.getElementById(`add_to_rm_${index}`);
-			button.textContent = "Add to researcg map";			
-            if (articleStatus["isExist"]) {
-	        	setAdded(button[0]);
+			let button = $(`#add_to_rm_${index}`);
+			if (button[0]) {
+				button[0].innerText = "Add to research map";			
+				if (articleStatus["isExist"]) {
+					setAdded(button[0]);
+				}
 			}
 			// Add "NEW" bage in Title Field of article
             if (!articleStatus["isViewed"]) {
-                let titleField = scholar.titleFieldSeclector(articleBlock[0]);
-                let label = document.createElement('span');
-                
+				let titleField = scholar.titleFieldSeclector(articleBlock[0]);
+				let bootstrapTag = document.createElement("div");
+				bootstrapTag.className = "bootstrap";
+                let label = document.createElement("span");
 	        	label.className = "btn btn-info btn-sm";
 				label.innerHTML = "New";
 				label.style.marginLeft = "5px";
-	        	titleField.appendChild(label);
+				
+				bootstrapTag.appendChild(label)
+	        	titleField.appendChild(bootstrapTag);
 			}
 			
             button.click(articleId, function(event) {
