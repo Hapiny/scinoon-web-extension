@@ -24,7 +24,7 @@ var scholars = {
 		getSearchString : () => {
 			return document.getElementById("gs_hdr_tsi").value;
 		},
-		articleBlocksSelector : "#gs_res_ccl_mid > .gs_r",
+		articleBlocksSelector : "#gs_res_ccl_mid > .gs_r.gs_or",
 		articleSourceName     : "scholar",
 		titleFieldSeclector   : (block) => {
 			return block.getElementsByClassName("gs_rt")[0];

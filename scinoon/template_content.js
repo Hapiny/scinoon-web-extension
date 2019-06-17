@@ -36,7 +36,7 @@ function createTermsPanel() {
 		return;
 	}
 	var termsPanel = document.createElement('div');
-	termsPanel.className = "scholar_terms_panel";
+	termsPanel.className = "scholar_terms_panel bootstrap";
 	termsPanel.id = "terms_panel"
 	
 	var titleBox = document.createElement('div');
@@ -79,6 +79,24 @@ function createTermsPanel() {
 		}
 	});
 	makeDraggableElement(termsPanel);
+}
+
+function createAddButtons() {
+	let articleBlocks = $(scholar.articleBlocksSelector);
+	for (let index = 0; index < articleBlocks.length; index++) {
+		let bootstrapTag = document.createElement("div");
+		bootstrapTag.className = "bootstrap";
+		let button = document.createElement("button");
+		button.id = `add_to_rm_${index}`;
+		button.type = "button";
+		button.className = "btn btn-primary btn-sm add_to_rm_button";
+		button.textContent = "Loading...";
+		bootstrapTag.appendChild(button);
+
+		if (document.getElementById(`add_to_rm_${index}`) === null) {
+			articleBlocks[index].append(bootstrapTag);
+		}
+	}
 }
 
 function addTermsTitle(text, termsBox) {
@@ -143,27 +161,22 @@ function handleNormalizedData(message) {
     }
     
 	let normalizedArticlesStatus = message.data;
-    let articleBlocks = $(scholar.articleBlocksSelector);
+	let articleBlocks = $(scholar.articleBlocksSelector);
 
     for (let index = 0; index < normalizedArticlesStatus.length; ++index) {
         let articleStatus = normalizedArticlesStatus[index];
         let articleId = articleStatus["article"]["id"];
-        
         if (articleId.sourceName === scholar.articleSourceName) {
             let scholarId = articleId.privateId;
             let blockFilter = scholar.getBlockFilter(scholarId);
 
-            let articleBlock = articleBlocks.has(blockFilter);
-	        let button = $("<button>", {
-	            id: `add_to_rm_${scholarId}`,
-	            type: "button",
-	            class: "btn btn-primary add_to_rm_button",
-	            text: "Add to research map"
-			});
-			
+			let articleBlock = articleBlocks.has(blockFilter);
+			let button = document.getElementById(`add_to_rm_${index}`);
+			button.textContent = "Add to researcg map";			
             if (articleStatus["isExist"]) {
 	        	setAdded(button[0]);
-            }
+			}
+			// Add "NEW" bage in Title Field of article
             if (!articleStatus["isViewed"]) {
                 let titleField = scholar.titleFieldSeclector(articleBlock[0]);
                 let label = document.createElement('span');
@@ -172,7 +185,8 @@ function handleNormalizedData(message) {
 				label.innerHTML = "New";
 				label.style.marginLeft = "5px";
 	        	titleField.appendChild(label);
-            }
+			}
+			
             button.click(articleId, function(event) {
 	        	browser.runtime.sendMessage({
 	        	    name: messages.SELECTED_ARTICLES,
@@ -180,12 +194,9 @@ function handleNormalizedData(message) {
 	        	});
 	        	setAdded(this);
 			});
-			if (document.getElementById(`add_to_rm_${scholarId}`) === null) {
-				articleBlock.append(button);
-			}
         }
     }
-    waitPageLoading = false;
+	waitPageLoading = false;
 }
 
 
@@ -208,6 +219,7 @@ browser.runtime.onMessage.addListener(function(message) {
 injectLocalCss();
 createTermsPanel();
 if (scholar.name !== "semantic") {
+	createAddButtons();
 	parseSearchResult();
 } else {
 	window.onload = () => {
@@ -231,6 +243,7 @@ if (scholar.name !== "semantic") {
 				let newTitleName = mutation.target.innerText;
 				console.log(`New title "${newTitleName}"`);
 				if (window.location.href.search("/search") !== -1) {
+					createAddButtons();
 					parseSearchResult();
 				} else if (window.location.href.search("/paper/") !== -1) {
 					let article = parseArticleOnPage();
