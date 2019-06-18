@@ -211,9 +211,6 @@ browser.runtime.onMessage.addListener(function(message, sender) {
 
 
 browser.storage.local.get("map").then(data => {
-	if (BACKGROUND_DEBUG) {
-		console.log(browser.storage.local);
-	}
 	if (data.map == null) {
 		browser.storage.local.set({map: "CERMINE"});
 	}

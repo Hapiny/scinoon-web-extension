@@ -96,7 +96,7 @@ function createAddButtons() {
 		let bootstrapTag = document.createElement("div");
 		bootstrapTag.className = "bootstrap";
 		let button = document.createElement("button");
-		button.id = `add_to_rm_${index}`;
+		// button.id = `add_to_rm_${index}`;
 		button.type = "button";
 		button.className = "btn btn-primary btn-sm add_to_rm_button";
 		button.textContent = "Loading...";
@@ -115,7 +115,7 @@ function addButtonOnArticlePage() {
 		let bootstrapTag = document.createElement("div");
 		bootstrapTag.className = "bootstrap";
 		let button = document.createElement("button");
-		button.id = `add_to_rm_${0}`;
+		// button.id = `add_to_rm_${0}`;
 		button.type = "button";
 		button.style.marginTop = "10px";
 		button.style.marginLeft = "10px";
@@ -205,16 +205,23 @@ function handleNormalizedData(message) {
             let blockFilter = scholar.getBlockFilter(scholarId);
 
 			let articleBlock = articleBlocks.has(blockFilter);
-			let button = $(".btn")[index];
+			let button = $(".btn.add_to_rm_button")[index];
 			if (button) {
 				button.innerText = "Add to research map";			
 				if (articleStatus["isExist"]) {
 					setAdded(button);
 				}
+				button.addEventListener("click", function(event) {
+					browser.runtime.sendMessage({
+						name: messages.SELECTED_ARTICLES,
+						data: [articleId]
+	        		});
+	        		setAdded(this);
+				});
 			} else {
 				console.log("CONTENT: error in button change");
 				console.log(`#add_to_rm_${index}`);
-				console.log(button);
+				console.log($(".btn.add_to_rm_button"));
 			}
 			// Add "NEW" bage in Title Field of article
             if (!articleStatus["isViewed"]) {
@@ -229,14 +236,6 @@ function handleNormalizedData(message) {
 				bootstrapTag.appendChild(label)
 	        	titleField.appendChild(bootstrapTag);
 			}
-			
-            button.click(articleId, function(event) {
-	        	browser.runtime.sendMessage({
-	        	    name: messages.SELECTED_ARTICLES,
-	        	    data: [event.data]
-	        	});
-	        	setAdded(this);
-			});
         }
     }
 }
