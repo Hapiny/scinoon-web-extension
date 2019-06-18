@@ -15,6 +15,7 @@
             "browser-polyfill.js", 
             "lib/jquery-3.2.1.min.js", 
             "utils.js",
+            "background/server.js",
             "background/background.js"
         ]
     },
@@ -49,7 +50,7 @@
                 "*scholar.google.*/schhp*",
                 "*://www.semanticscholar.*/", 
                 "*www.semanticscholar.*/search*",
-                "*://www.semanticscholar.org/paper/*"
+                "*://www.semanticscholar.org/*/*"
             ],
             "js": [
                 "browser-polyfill.js", 
@@ -57,9 +58,13 @@
                 "content/semantic_utils.js",
                 "lib/jquery-3.2.1.min.js",
                 "extractor/extractor.js", 
+                "extractor/ss_extractor.js", 
+                "extractor/gs_extractor.js", 
                 "content/template_content.js"
             ],
-            "css": ["lib/bootstrap.min.css"]
+            "css": [
+                "lib/bootstrap.min.css"
+            ]
         }
     ],
 

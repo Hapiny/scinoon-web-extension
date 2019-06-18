@@ -4,9 +4,11 @@ let $ = window.$.noConflict(true);
 let hostname = window.location.hostname;
 
 if (hostname.search("google") !== -1) {
-    var scholar = scholars.google;
+	var scholar = scholars.google;
+	var extractor = new GSExtractor("google");
 } else if (hostname.search("semantic") !== -1) {
-    var scholar = scholars.semantic;
+	var scholar = scholars.semantic;
+	var extractor = new SSExtractor("semantic");
 }
 
 let baseLink = `http://${hostname}${scholar.searchPath}`;
@@ -115,7 +117,7 @@ function addButtonOnArticlePage() {
 		let bootstrapTag = document.createElement("div");
 		bootstrapTag.className = "bootstrap";
 		let button = document.createElement("button");
-		// button.id = `add_to_rm_${0}`;
+		button.id = `add_to_rm_${0}`;
 		button.type = "button";
 		button.style.marginTop = "10px";
 		button.style.marginLeft = "10px";
@@ -125,6 +127,9 @@ function addButtonOnArticlePage() {
 
 		if (document.getElementById(`add_to_rm_${0}`) === null) {
 			btnField.append(bootstrapTag);
+		}
+		if (CONTENT_DEBUG) {
+			console.log("CONTENT: adding btn");
 		}
 	}
 }
@@ -225,6 +230,7 @@ function handleNormalizedData(message) {
 			}
 			// Add "NEW" bage in Title Field of article
             if (!articleStatus["isViewed"]) {
+				console.log(articleBlock);
 				let titleField = scholar.titleFieldSeclector(articleBlock[0]);
 				let bootstrapTag = document.createElement("div");
 				bootstrapTag.className = "bootstrap";
@@ -285,20 +291,24 @@ switch(scholar.name) {
 		let observer = new MutationObserver((mutations, obs) => {
 			mutations.forEach((mutation) => {
 				if (mutation.target.tagName === "TITLE") {
+					let url = window.location.href;
 					let newTitleName = mutation.target.innerText;
 					if (CONTENT_DEBUG) {
 						console.log(`CONTENT: new title "${newTitleName}"`);
 					}
-					if (window.location.href.search("/search") !== -1) {
+					if (url.search("/search") !== -1) {
 						createAddButtons();
 						parseSearchResult();
-					} else if (window.location.href.search("/paper/") !== -1) {
+					} else if (url.search("/paper/") !== -1) {
 						addButtonOnArticlePage();
 						let article = parseArticleOnPage();
 						if (CONTENT_DEBUG) {
 							console.log(article);
 						}
 						parseSearchResult(article);
+					} else if (url.search("/author/") !== -1) {
+						createAddButtons();
+						parseSearchResult();
 					}
 				}
 			});
