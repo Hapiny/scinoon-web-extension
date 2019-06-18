@@ -230,6 +230,7 @@ browser.runtime.sendMessage({name: messages.GET_TERMS});
 browser.runtime.onMessage.addListener(function(message) {
 	switch (message.name) {
 		case messages.NORMALIZED_DATA: 
+			console.log("NORMALIZED DATA");
 			handleNormalizedData(message);
 			break;
 		case messages.EXTRACTED_TERMS_RESEARCH:
@@ -249,12 +250,18 @@ if (scholar.name !== "semantic") {
 	parseSearchResult();
 } else {
 	window.onload = () => {
-		console.log("LOADED");
 		let urlParts = window.location.href.split("/");
 		if (urlParts.indexOf("paper") !== -1) {
+			addButtonOnArticlePage();
 			let article = parseArticleOnPage();
 			console.log(article);
-			addButtonOnArticlePage();
+			browser.runtime.sendMessage({
+				name: messages.RETURN_EXTRACTED,
+				data: {
+					url : window.location.href,
+					articles : [article]
+				}
+			});
 		}
 	}
 
@@ -273,9 +280,16 @@ if (scholar.name !== "semantic") {
 					createAddButtons();
 					parseSearchResult();
 				} else if (window.location.href.search("/paper/") !== -1) {
+					addButtonOnArticlePage();
 					let article = parseArticleOnPage();
 					console.log(article);
-					addButtonOnArticlePage();
+					browser.runtime.sendMessage({
+						name: messages.RETURN_EXTRACTED,
+						data: {
+							url : window.location.href,
+							articles : [article]
+						}
+					});
 				}
 			}
 		});

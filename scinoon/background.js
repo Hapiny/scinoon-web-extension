@@ -22,6 +22,7 @@ function onTermsExtractionError(jqXHR, textStatus, errorThrown) {
 
 var sciserver = {
 	saveAndProcessArticles : function(articles, sender) {
+		console.log(JSON.stringify(articles));
 		browser.storage.local.get().then(data => {
 			console.log(data);
 			var base = data.origin;
@@ -33,7 +34,6 @@ var sciserver = {
 				data : articles,
 				success : function(data) {
 					console.log("normalized data arrives: ");
-					console.log(data);
 					browser.tabs.sendMessage(id, {
 						name: messages.NORMALIZED_DATA,
 						data: data
