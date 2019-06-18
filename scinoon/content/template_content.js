@@ -1,3 +1,5 @@
+const CONTENT_DEBUG = true;
+
 let $ = window.$.noConflict(true);
 let hostname = window.location.hostname;
 
@@ -7,7 +9,6 @@ if (hostname.search("google") !== -1) {
     var scholar = scholars.semantic;
 }
 
-let waitPageLoading = false;
 let baseLink = `http://${hostname}${scholar.searchPath}`;
 let searchString = scholar.getSearchString();
 
@@ -20,8 +21,16 @@ function injectLocalCss() {
 	scholarCssLink.appendTo("head");
 };
 
-function parseSearchResult() {
-    let articles = extractor.extract(document);
+function parseSearchResult(extractedData = undefined) {
+	if (!extractedData) {
+		var articles = extractor.extract(document);
+	} else {
+		var articles = extractedData;
+	}
+	if (CONTENT_DEBUG) {
+		console.log("CONTENT: extractor result")
+		console.log(articles[0]);
+	}
 	browser.runtime.sendMessage({
 	    name: messages.RETURN_EXTRACTED,
 	    data: {
@@ -100,13 +109,13 @@ function createAddButtons() {
 }
 
 function addButtonOnArticlePage() {
-	let btnField = document.getElementsByClassName("flex-container flex-wrap flex-paper-actions-group alternate-sources");
+	let btnField = document.getElementsByClassName("flex-container flex-wrap flex-paper-actions-group");
 	if (btnField.length) {
 		btnField = btnField[0];
 		let bootstrapTag = document.createElement("div");
 		bootstrapTag.className = "bootstrap";
 		let button = document.createElement("button");
-		button.id = `add_to_rm_${100500}`;
+		button.id = `add_to_rm_${0}`;
 		button.type = "button";
 		button.style.marginTop = "10px";
 		button.style.marginLeft = "10px";
@@ -114,7 +123,7 @@ function addButtonOnArticlePage() {
 		button.textContent = "Loading...";
 		bootstrapTag.appendChild(button);
 
-		if (document.getElementById(`add_to_rm_${100500}`) === null) {
+		if (document.getElementById(`add_to_rm_${0}`) === null) {
 			btnField.append(bootstrapTag);
 		}
 	}
@@ -182,6 +191,10 @@ function handleNormalizedData(message) {
     }
     
 	let normalizedArticlesStatus = message.data;
+	if (CONTENT_DEBUG) {
+			console.log("CONTENT: handle normalized data");
+			console.log(normalizedArticlesStatus);
+	}
 	let articleBlocks = $(scholar.articleBlocksSelector);
 
     for (let index = 0; index < normalizedArticlesStatus.length; ++index) {
@@ -222,15 +235,12 @@ function handleNormalizedData(message) {
 			});
         }
     }
-	waitPageLoading = false;
 }
 
 
-browser.runtime.sendMessage({name: messages.GET_TERMS});
 browser.runtime.onMessage.addListener(function(message) {
 	switch (message.name) {
 		case messages.NORMALIZED_DATA: 
-			console.log("NORMALIZED DATA");
 			handleNormalizedData(message);
 			break;
 		case messages.EXTRACTED_TERMS_RESEARCH:
@@ -242,91 +252,57 @@ browser.runtime.onMessage.addListener(function(message) {
 		}
 	}
 );
-
+browser.runtime.sendMessage({name: messages.GET_TERMS});
 injectLocalCss();
 createTermsPanel();
-if (scholar.name !== "semantic") {
-	createAddButtons();
-	parseSearchResult();
-} else {
-	window.onload = () => {
-		let urlParts = window.location.href.split("/");
-		if (urlParts.indexOf("paper") !== -1) {
-			addButtonOnArticlePage();
-			let article = parseArticleOnPage();
-			console.log(article);
-			browser.runtime.sendMessage({
-				name: messages.RETURN_EXTRACTED,
-				data: {
-					url : window.location.href,
-					articles : [article]
+switch(scholar.name) {
+	case "google":
+		createAddButtons();
+		parseSearchResult();
+		break;
+	case "semantic":
+		window.onload = () => {
+			let urlParts = window.location.href.split("/");
+			if (urlParts.indexOf("paper") !== -1) {
+				addButtonOnArticlePage();
+				let article = parseArticleOnPage();
+				if (CONTENT_DEBUG) {
+					console.log(article);
+				}
+				parseSearchResult(article);
+			}
+		}
+	
+		let observerProps = {
+			childList: true,
+			subtree: true,
+			attributeFilter: ['style']
+		}
+	
+		let observer = new MutationObserver((mutations, obs) => {
+			mutations.forEach((mutation) => {
+				if (mutation.target.tagName === "TITLE") {
+					let newTitleName = mutation.target.innerText;
+					if (CONTENT_DEBUG) {
+						console.log(`CONTENT: new title "${newTitleName}"`);
+					}
+					if (window.location.href.search("/search") !== -1) {
+						createAddButtons();
+						parseSearchResult();
+					} else if (window.location.href.search("/paper/") !== -1) {
+						addButtonOnArticlePage();
+						let article = parseArticleOnPage();
+						if (CONTENT_DEBUG) {
+							console.log(article);
+						}
+						parseSearchResult(article);
+					}
 				}
 			});
-		}
-	}
-
-	let observerProps = {
-		childList: true,
-		subtree: true,
-		attributeFilter: ['style']
-	}
-
-	let observer = new MutationObserver((mutations, obs) => {
-		mutations.forEach((mutation) => {
-			if (mutation.target.tagName === "TITLE") {
-				let newTitleName = mutation.target.innerText;
-				console.log(`New title "${newTitleName}"`);
-				if (window.location.href.search("/search") !== -1) {
-					createAddButtons();
-					parseSearchResult();
-				} else if (window.location.href.search("/paper/") !== -1) {
-					addButtonOnArticlePage();
-					let article = parseArticleOnPage();
-					console.log(article);
-					browser.runtime.sendMessage({
-						name: messages.RETURN_EXTRACTED,
-						data: {
-							url : window.location.href,
-							articles : [article]
-						}
-					});
-				}
-			}
 		});
-	});
-	observer.observe(document, observerProps);
+		observer.observe(document, observerProps);
+		break;
+	case "arxiv":
+		createTermsPanel();
+		parseSearchResult();
 }
-
-
-// let observer = new MutationObserver(function (mutations, obs) {
-// 	if (document.getElementsByClassName("loading-controls").length > 0) {
-// 		console.log("LOADER APPEARS");
-// 	}
-// 	let searchResult = document.getElementsByClassName("search-result");
-//     if (searchResult !== undefined && searchResult.length > 0) {
-// 		let buttons = document.getElementsByClassName("add_to_rm_button");
-//         let buttonsPresent = buttons && buttons.length > 0;
-// 		// console.log(buttons.length, searchResult.length);
-//         if (!buttonsPresent && !waitPageLoading) {
-// 			waitPageLoading = true;
-// 			parseSearchResult();
-// 		}
-// 		// stop observer
-// 		// obs.disconnect();
-// 		// return;
-// 	}
-// 	console.log(obs.takeRecords());
-// 	// let titleField = document.querySelector('[data-selenium-selector="paper-detail-title"]');
-// 	// if (titleField !== null && !waitPageLoading) {
-// 	// 	waitPageLoading = true;
-// 	// 	parseSearchResult();
-// 	// 	let addBtn = document.createElement("button");
-// 	// 	addBtn.className = "btn btn-primary";
-// 	// 	addBtn.textContent = "Add to research map";
-// 	// 	titleField.appendChild(addBtn);
-// 	// 	let title = titleField.innerText;
-// 	// 	console.log(title);
-// 	// }
-// });
-//     }
-// });

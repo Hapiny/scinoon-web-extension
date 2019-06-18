@@ -12,8 +12,10 @@
 
     "background": {
         "scripts": [
-            "browser-polyfill.js", "lib/jquery-3.2.1.min.js", "types.js",
-            "background.js"
+            "browser-polyfill.js", 
+            "lib/jquery-3.2.1.min.js", 
+            "utils.js",
+            "background/background.js"
         ]
     },
 
@@ -29,10 +31,9 @@
             ],
             "js": [
                 "browser-polyfill.js", 
-                "types.js", 
+                "utils.js", 
                 "lib/jquery-3.2.1.min.js",
-                "ping.js", 
-                "rm_content.js"
+                "content/rm_content.js"
             ],
             "run_at": "document_idle"
         },
@@ -52,18 +53,18 @@
             ],
             "js": [
                 "browser-polyfill.js", 
-                "types.js", 
-                "semantic_utils.js",
+                "utils.js", 
+                "content/semantic_utils.js",
                 "lib/jquery-3.2.1.min.js",
-                "extractor.js", 
-                "template_content.js"
+                "extractor/extractor.js", 
+                "content/template_content.js"
             ],
             "css": ["lib/bootstrap.min.css"]
         }
     ],
 
     "options_ui": {
-        "page"          : "options.html",
+        "page"          : "options/options.html",
         "open_in_tab"   : false
     },
 

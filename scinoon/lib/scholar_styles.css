@@ -1,4 +1,4 @@
-.add_to_rm_button {
+/* .add_to_rm_button {
   display: inline-block;
   font-size: 14px;
   font-weight: 400;
@@ -16,7 +16,7 @@
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-}
+} */
 
 .scholar_terms_panel {
   position: fixed;

@@ -1,12 +1,18 @@
-﻿var scilocalTabsQuery = {url: ["http://127.0.0.1:9000/research/*",
-							   "http://localhost:9000/research/*",
-							   "https://scilocal.at.ispras.ru/research/*",
-							   "https://scigraph.at.ispras.ru/research/*",
-							   "https://scinoon.at.ispras.ru/research/*",
-							   "https://scinoon.com/research/*"]};
+﻿const BACKGROUND_DEBUG = true;
+
+let sciTabsQuery = {
+	url: [
+		"http://127.0.0.1:9000/research/*",
+		"http://localhost:9000/research/*",
+		"https://scilocal.at.ispras.ru/research/*",
+		"https://scigraph.at.ispras.ru/research/*",
+		"https://scinoon.at.ispras.ru/research/*",
+		"https://scinoon.com/research/*"
+	]
+};
 
 function queryAddr(url) {
-	var addr = "";
+	let addr = "";
 	if (url.search("semanticscholar") != -1 ) {
 		addr = '/ext/';
 	}	
@@ -17,14 +23,18 @@ function queryAddr(url) {
 }
 
 function onTermsExtractionError(jqXHR, textStatus, errorThrown) {
-	console.log("terms extraction error: " + textStatus + errorThrown);
+	if (BACKGROUND_DEBUG) {
+		console.log("BG: terms extraction error: " + textStatus + errorThrown);
+	}
 }
 
 var sciserver = {
-	saveAndProcessArticles : function(articles, sender) {
-		console.log(JSON.stringify(articles));
+	saveAndProcessArticles : (articles, sender) => {
+		// if (BACKGROUND_DEBUG) {
+		// 	console.log("BG: extracted data from CONTENT arrive");
+		// 	console.log(articles);
+		// }
 		browser.storage.local.get().then(data => {
-			console.log(data);
 			var base = data.origin;
 			var id = sender.tab.id;
 			var url = sender.url;
@@ -33,15 +43,18 @@ var sciserver = {
 				url : base + queryAddr(url) + data.map,
 				data : articles,
 				success : function(data) {
-					console.log("normalized data arrives: ");
+					if (BACKGROUND_DEBUG) {
+						console.log("BG: normalized data arrives");
+					}
 					browser.tabs.sendMessage(id, {
 						name: messages.NORMALIZED_DATA,
 						data: data
 					});
 				},
 				error : function(jqXHR, textStatus, errorThrown) {
-					console.log("normalized data error: " + textStatus + errorThrown);
-					// TODO Show error message in popup
+					if (BACKGROUND_DEBUG) {
+						console.log("BG: normalized data error: " + textStatus + errorThrown);
+					}
 				},
 				dataType : "json",
 				contentType : "application/json"
@@ -49,13 +62,15 @@ var sciserver = {
 		});
 
 	},
-	saveResearchMap : function(articles, callback, map) {
+	saveResearchMap : (articles, callback, map) => {
 		browser.storage.local.get().then(data => {
 			var base = data.origin;
 			map = typeof map !== 'undefined' ? map : data.map;
 			if (map == null) {
-				console.log("warn! unsetted research map name.");
-				map = "default";
+				if (BACKGROUND_DEBUG) {
+					console.log("BG: warn! unsetted research map name.");
+				}
+				map = "demo";
 			}
 			$.ajax({
 				type : "POST",
@@ -63,20 +78,23 @@ var sciserver = {
 				data : articles,
 				success : callback,
 				error : function(jqXHR, textStatus, errorThrown) {
-					alert("Data didn't save.")
+					alert("BG: Data didn't save.")
 				},
 				contentType : "application/json"
 			});
 		});
 	},
-	getTermsFromResearch: function(id) {
+	getTermsFromResearch: (id) => {
 		browser.storage.local.get().then( data => {
 			var base = data.origin;
 			$.ajax({
 				type: "GET",
 				url: base + '/research/' + data.map + '/terms/getFromResearch/' + data.topCount,
 				success: function(data) {
-					console.log("terms from research arrives: " + data)
+					if (BACKGROUND_DEBUG) {
+						console.log("BG: terms from research arrives")
+						console.log(data);
+					}
 					browser.tabs.sendMessage(id, {
 						name: messages.EXTRACTED_TERMS_RESEARCH,
 						data: data
@@ -94,9 +112,14 @@ var sciserver = {
 				url : base + '/research/' + data.map + '/terms/getFromClusters/' + data.topCount,
 				success : function(data) {
 					if (data.length == 0) {
-						console.log("there are no terms from clusters")
+						if (BACKGROUND_DEBUG) {
+							console.log("BG: there are no terms from clusters")
+						}
 					} else {
-						console.log("terms from cluster arrives: " + data);
+						if (BACKGROUND_DEBUG) {
+							console.log("BG: terms from cluster arrives");
+							console.log(data);
+						}
 						browser.tabs.sendMessage(id, {
 							name: messages.EXTRACTED_TERMS_CLUSTERS,
 							data: data
@@ -110,7 +133,9 @@ var sciserver = {
 };
 
 function onError(error) {
-	console.log(`Error: ${error}`);
+	if (BACKGROUND_DEBUG) {
+		console.log(`BG: error ${error}`);
+	}
 }
 
 function sendRmUpdatedToTabs(tabs) {
@@ -120,21 +145,28 @@ function sendRmUpdatedToTabs(tabs) {
 }
 
 function handleReturnExtracted(message, sender) {
-	console.log("extraction results arrive!");
+	if (BACKGROUND_DEBUG) {
+		console.log("BG: extraction results arrive!");
+	}
 	sciserver.saveAndProcessArticles(JSON.stringify(message.data.articles), sender);
 }
 
 function handleSelectedArticles(message) {
-	console.log("selection received in BG");
-	console.log(message.data);
+	if (BACKGROUND_DEBUG) {
+		console.log("BG: selection received");
+		console.log(message.data);
+	}
 	sciserver.saveResearchMap(JSON.stringify(message.data), function() {
-		browser.tabs.query(scilocalTabsQuery).then(sendRmUpdatedToTabs, onError);
+		browser.tabs.query(sciTabsQuery).then(sendRmUpdatedToTabs, onError);
 	});
 }
 
 // XXX Very similar to options.js#updateServerAndMap()
 function handleSetDefaultMap(message) {
-	console.log(message);
+	if (BACKGROUND_DEBUG) {
+		console.log("BG: setting default map");
+		console.log(message);
+	}
 	var newDefaultMap = message.data.map;
 	var newDefaultOrigin = message.data.origin;
 
@@ -150,7 +182,7 @@ function handleSetDefaultMap(message) {
 			}
 		}
 
-		var querying = browser.tabs.query(scilocalTabsQuery);
+		var querying = browser.tabs.query(sciTabsQuery);
 		querying.then(forEachTabInTabs, onError);
 	}
 }
@@ -179,8 +211,11 @@ browser.runtime.onMessage.addListener(function(message, sender) {
 
 
 browser.storage.local.get("map").then(data => {
+	if (BACKGROUND_DEBUG) {
+		console.log(browser.storage.local);
+	}
 	if (data.map == null) {
-		browser.storage.local.set({map: "yatskov"});
+		browser.storage.local.set({map: "CERMINE"});
 	}
 }, onError);
 
@@ -195,3 +230,12 @@ browser.storage.local.get("topCount").then(data => {
 		browser.storage.local.set({topCount: 20});
 	}
 }, onError);
+
+
+// class SciServer {
+// 	constructor(sciUrls) {
+// 		this.sciUrls = sciUrls;
+// 	}
+
+
+// }

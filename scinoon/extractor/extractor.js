@@ -137,7 +137,7 @@ var extractor = {
 		} catch (e) {
 			console.log(e);
 		}
-		console.log(result[0]);
+		// console.log(result[0]);
 		return result;
 	},
 	
@@ -174,14 +174,14 @@ var extractor = {
 				moreAuthorsButton.click();
 			}
 			
-			let paperLink = block.getElementsByClassName("icon-button paper-link")[0];
-			let isPdfAvailable = paperLink.getAttribute("data-heap-direct-pdf-link");
-			if(paperLink) {
-				article["textUrl"] = paperLink.getAttribute("href");
-				if (isPdfAvailable === "true") {
-					article["textType"] = "pdf";
-				}
-			}
+			// let paperLink = block.getElementsByClassName("icon-button paper-link")[0];
+			// let isPdfAvailable = paperLink.getAttribute("data-heap-direct-pdf-link");
+			// if(paperLink) {
+			// 	article["textUrl"] = paperLink.getAttribute("href");
+			// 	if (isPdfAvailable === "true") {
+			// 		article["textType"] = "pdf";
+			// 	}
+			// }
 			
 			let titleElement = block.getElementsByClassName("search-result-title")[0];
 			let info = {
@@ -193,7 +193,7 @@ var extractor = {
 			
 			let yearField = block.querySelector('[data-selenium-selector="paper-year"]');
 			if (yearField) {
-				article["year"] = parseInt(yearField.innerText);
+				article.year = parseInt(yearField.innerText);
 			}
 
 			let moreAbstractButton = block.getElementsByClassName("more mod-clickable")[0];
@@ -204,7 +204,7 @@ var extractor = {
 			
 			let abstractField = block.getElementsByClassName("abstract")[0];
 			if (abstractField) {
-				article["abstractText"] = abstractField.innerText.slice(0, -7);
+				article.abstractText = abstractField.innerText.slice(0, -7);
 			}
 			// click to hide full abstract
 			if (moreAbstractButton) {
@@ -212,7 +212,7 @@ var extractor = {
 			}
 			extractedArticles.push(article);
 		}
-		console.log(extractedArticles[0]);
+		// console.log(extractedArticles[0]);
 		return extractedArticles;
 	},
 	

@@ -30,7 +30,6 @@ document.addEventListener("DOMContentLoaded", function() {
 		}, onError)
 		mapElement.addEventListener("change", function() {
 			console.log("changed to " + mapElement.value);
-			// TODO provide better security
 			browser.storage.local.set({map: mapElement.value});
 			updateServerAndMap()
 		});
@@ -42,7 +41,6 @@ document.addEventListener("DOMContentLoaded", function() {
 		}, onError)
 		serverElement.addEventListener("change", function() {
 			console.log("changed to " + serverElement.value);
-			// TODO provide better security
 			browser.storage.local.set({origin: serverElement.value});
 			updateServerAndMap()
 		});
@@ -54,21 +52,10 @@ document.addEventListener("DOMContentLoaded", function() {
 		}, onError)
 		topCountElement.addEventListener("change", function() {
 			console.log("changed to " + topCountElement.value);
-			// TODO provide better security
 			browser.storage.local.set({topCount: topCountElement.value});
 		});
 	})();
 	
-	// (function() {
-	// 	let icon = document.getElementById("icon");
-	// 	icon.style.height = "64px";
-	// 	icon.style.width = "64px";
-
-	// 	let titleField = document.getElementById("icon-and-name-wrapper");
-	// 	let nameSpan = titleField.getElementsByTagName("span")[0];
-	// 	nameSpan.style.fontSize = "50px"; 
-	// })();
-
 	browser.runtime.onMessage.addListener(function(message) {
 		if (message.name == messages.SET_DEFAULT_MAP) {
 			console.log("SET_DEFAULT_MAP catched by options");

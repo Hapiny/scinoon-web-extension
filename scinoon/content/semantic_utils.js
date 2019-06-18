@@ -5,25 +5,30 @@ function parseArticleOnPage() {
         src : "semantic-scholar"
     }];
     let articleHeader = document.getElementById("paper-header");
-    let articleTitleField = document.querySelector('[data-selenium-selector="paper-detail-title"]');
-    if (articleTitleField) {
-        article.title = articleTitleField.innerText;
-    }
 
     let authorsField = articleHeader.getElementsByClassName("author-list__link author-list__author-name");
     article.authors = [];
     if (authorsField.length) {
-        for (let author of authorsField)
-        article.authors.push({
-            ids : author.getAttribute("href").split("/").slice(-1),
-            fullname : author.innerText,
-        });
+        for (let author of authorsField) {
+            let authorRef = author.getAttribute("href");
+            article.authors.push({
+                fullName : author.innerText,
+                ids : [{
+                    id : authorRef.split("/").pop(),
+                    src : window.location.hostname + authorRef
+                }],
+            });
+        }
     }
 
-    // let doiField = articleHeader.querySelector('[data-selenium-selector="paper-doi"]');
-    // if (doiField) {
-    //     article.doi = doiField.innerText;
-    // }
+    let doiField = articleHeader.querySelector('[data-selenium-selector="paper-doi"]');
+    if (doiField) {
+        article.doi = doiField.innerText;
+    }
+    let articleTitleField = document.querySelector('[data-selenium-selector="paper-detail-title"]');
+    if (articleTitleField) {
+        article.title = articleTitleField.innerText;
+    }
 
     let yearField = articleHeader.querySelector('[data-selenium-selector="paper-year"]');
     if (yearField) {
@@ -43,5 +48,7 @@ function parseArticleOnPage() {
     if (moreAbstractBtn) {
         moreAbstractBtn.click();
     }
-    return article;
+    let result = [];
+    result.push(article);
+    return result;
 }
