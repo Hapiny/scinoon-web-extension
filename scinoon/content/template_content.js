@@ -205,12 +205,16 @@ function handleNormalizedData(message) {
             let blockFilter = scholar.getBlockFilter(scholarId);
 
 			let articleBlock = articleBlocks.has(blockFilter);
-			let button = $(`#add_to_rm_${index}`);
-			if (button[0]) {
-				button[0].innerText = "Add to research map";			
+			let button = $(".btn")[index];
+			if (button) {
+				button.innerText = "Add to research map";			
 				if (articleStatus["isExist"]) {
-					setAdded(button[0]);
+					setAdded(button);
 				}
+			} else {
+				console.log("CONTENT: error in button change");
+				console.log(`#add_to_rm_${index}`);
+				console.log(button);
 			}
 			// Add "NEW" bage in Title Field of article
             if (!articleStatus["isViewed"]) {
