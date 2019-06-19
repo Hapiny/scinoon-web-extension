@@ -10,7 +10,6 @@ let sciTabsQuery = {
 		"https://scinoon.com/research/*"
 	]
 };
-
 let sciserver = new SciServer(sciTabsQuery, BACKGROUND_DEBUG);
 
 function sendRmUpdatedToTabs(tabs) {
@@ -57,7 +56,7 @@ function handleSetDefaultMap(message) {
 		}
 
 		var querying = browser.tabs.query(sciTabsQuery);
-		querying.then(forEachTabInTabs, onError);
+		querying.then(forEachTabInTabs, sciserver.onError);
 	}
 }
 

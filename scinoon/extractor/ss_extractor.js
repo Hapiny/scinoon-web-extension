@@ -1,79 +1,97 @@
 class SSExtractor extends Extractor {
-    constructor(name="google") {
-        super(name);
+    constructor(name, blockSelector, verbose=false) {
+        super(name, blockSelector, verbose);
     }
 
     extract(doc) {
         let extractedArticles = [];
-		let articleBlocks = doc.getElementsByClassName("search-result");
+        // in function extract guaranteed that the page is loaded
+		if (!this.blocks.length) {
+            console.log("refilling blocks");
+            this.getBlocks();
+        }
 
-		for(let block of articleBlocks) {
+		for (let block of this.blocks) {
 			let article = {
-				ids : [], authors : []
+				ids : [],
 			};
-			let moreAuthorsButton = block.getElementsByClassName("more-authors-label")[0];
-			// click to get full list of authors
-			if (moreAuthorsButton) {
-				moreAuthorsButton.click();
-			}
-			
-			let authorsElements = block.getElementsByClassName("author-list__link");
-			for(let elem of authorsElements) {
-				let authorUrl = elem.getAttribute("href");
-				let author = {
-					fullName : elem.innerText, 
-					ids : [{
-						id  : authorUrl.split("/").pop(),
-						src : window.location.hostname + authorUrl
-					}]
-				};
-				article.authors.push(author);
-			}
-			
-			moreAuthorsButton = block.getElementsByClassName("more-authors-label")[0];
-			// hide list of authors
-			if (moreAuthorsButton) {
-				moreAuthorsButton.click();
-			}
-			
-			let paperLink = block.getElementsByClassName("icon-button paper-link")[0];
-			if(paperLink) {
-                let isPdfAvailable = paperLink.getAttribute("data-heap-direct-pdf-link");
-				article["textUrl"] = paperLink.getAttribute("href");
-				if (isPdfAvailable === "true") {
-					article["textType"] = "pdf";
-				}
-			}
-			
-			let titleElement = block.getElementsByClassName("search-result-title")[0];
+            let titleElement = block.querySelector(".search-result-title");
 			let info = {
-				id  : titleElement.getElementsByTagName("a")[0].getAttribute("href").split('/').pop(),
+                id  : titleElement.getElementsByTagName("a")[0].getAttribute("href").split('/').pop(),
 				src : "semantic-scholar",
 			};
 			article.ids.push(info);
-			article.title = titleElement.innerText;
 			
-			let yearField = block.querySelector('[data-selenium-selector="paper-year"]');
-			if (yearField) {
-				article.year = parseInt(yearField.innerText);
-			}
+			article.authors = this.getAuthors(block, ".author-list__link");
+            article.textUrl = this.getTextLink(block, ".icon-button.paper-link");
+            article.textType = this.getTextType(block, ".icon-button.paper-link");
+            article.title = this.getTitle(block, ".search-result-title");
+			article.year = this.getYear(block, '[data-selenium-selector="paper-year"]');
+			article.abstractText = this.getAbstract(block, ".abstract");
 
-			let moreAbstractButton = block.getElementsByClassName("more mod-clickable")[0];
-			// click to get full abstract
-			if (moreAbstractButton) {
-				moreAbstractButton.click();
-			}
-			
-			let abstractField = block.getElementsByClassName("abstract")[0];
-			if (abstractField) {
-				article.abstractText = abstractField.innerText.slice(0, -7);
-			}
-			// click to hide full abstract
-			if (moreAbstractButton) {
-				moreAbstractButton.click();
-			}
-			extractedArticles.push(article);
-		}
+            extractedArticles.push(article);
+        }
 		return extractedArticles;
+    }
+
+    getAuthors(block, authorsSelector) {
+        let authors = []
+        let moreAuthorsButton = block.querySelector(".more-authors-label");
+        // click to get full list of authors
+        if (moreAuthorsButton) {
+            moreAuthorsButton.click();
+        }
+
+        let authorsElements = super.getAuthors(block, authorsSelector);
+        for(let elem of authorsElements) {
+            let authorUrl = elem.getAttribute("href");
+            let author = {
+                fullName : elem.innerText, 
+                ids : [{
+                    id  : authorUrl.split("/").pop(),
+                    src : window.location.hostname + authorUrl
+                }]
+            };
+            authors.push(author);
+        }
+
+        moreAuthorsButton = block.querySelector(".more-authors-label");
+        // hide list of authors
+        if (moreAuthorsButton) {
+            moreAuthorsButton.click();
+        }
+
+        if (this.verbose) {
+            console.log(`EXTRACTOR (${this.name}):`);
+            console.log(authors);
+        }
+
+        return authors;
+    }
+
+    getAbstract(block, abstractSelector) {
+        let moreAbstractButton = block.querySelector(".more.mod-clickable");
+        if (moreAbstractButton) {
+            moreAbstractButton.click(); // click to get full abstract
+        }
+
+        let abstract = super.getAbstract(block, abstractSelector).slice(0, -7);
+
+        if (moreAbstractButton) {
+            moreAbstractButton.click(); // click to hide full abstract
+        }
+        return abstract;
+    }
+
+    getTextType(block, textTypeSelector) {
+        let textTypeField = super.getTextType(block, textTypeSelector);
+        let textType = "";
+        if (textTypeField) {
+            let isPdfAvailable = textTypeField.getAttribute("data-heap-direct-pdf-link");
+            if (isPdfAvailable === "true") {
+                textType = "pdf";
+            }
+        }
+        return textType;
     }
 }

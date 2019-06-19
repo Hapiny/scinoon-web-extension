@@ -2,13 +2,12 @@ const CONTENT_DEBUG = true;
 
 let $ = window.$.noConflict(true);
 let hostname = window.location.hostname;
+let extractor = undefined;
 
 if (hostname.search("google") !== -1) {
 	var scholar = scholars.google;
-	var extractor = new GSExtractor("google");
 } else if (hostname.search("semantic") !== -1) {
 	var scholar = scholars.semantic;
-	var extractor = new SSExtractor("semantic");
 }
 
 let baseLink = `http://${hostname}${scholar.searchPath}`;
@@ -23,7 +22,7 @@ function injectLocalCss() {
 	scholarCssLink.appendTo("head");
 };
 
-function parseSearchResult(extractedData = undefined) {
+function parseSearchResult(extractor, extractedData = undefined) {
 	if (!extractedData) {
 		var articles = extractor.extract(document);
 	} else {
@@ -31,7 +30,7 @@ function parseSearchResult(extractedData = undefined) {
 	}
 	if (CONTENT_DEBUG) {
 		console.log("CONTENT: extractor result")
-		console.log(articles[0]);
+		console.log(articles);
 	}
 	browser.runtime.sendMessage({
 	    name: messages.RETURN_EXTRACTED,
@@ -197,8 +196,8 @@ function handleNormalizedData(message) {
     
 	let normalizedArticlesStatus = message.data;
 	if (CONTENT_DEBUG) {
-			console.log("CONTENT: handle normalized data");
-			console.log(normalizedArticlesStatus);
+		console.log("CONTENT: handle normalized data");
+		console.log(normalizedArticlesStatus);
 	}
 	let articleBlocks = $(scholar.articleBlocksSelector);
 
@@ -230,7 +229,6 @@ function handleNormalizedData(message) {
 			}
 			// Add "NEW" bage in Title Field of article
             if (!articleStatus["isViewed"]) {
-				console.log(articleBlock);
 				let titleField = scholar.titleFieldSeclector(articleBlock[0]);
 				let bootstrapTag = document.createElement("div");
 				bootstrapTag.className = "bootstrap";
@@ -261,35 +259,38 @@ browser.runtime.onMessage.addListener(function(message) {
 		}
 	}
 );
+
 browser.runtime.sendMessage({name: messages.GET_TERMS});
 injectLocalCss();
 createTermsPanel();
 switch(scholar.name) {
 	case "google":
+		extractor = new GSExtractor("google", scholar.articleBlocksSelector, CONTENT_DEBUG);
 		createAddButtons();
-		parseSearchResult();
+		parseSearchResult(extractor);
 		break;
 	case "semantic":
-		window.onload = () => {
-			let urlParts = window.location.href.split("/");
-			if (urlParts.indexOf("paper") !== -1) {
-				addButtonOnArticlePage();
-				let article = parseArticleOnPage();
-				if (CONTENT_DEBUG) {
-					console.log(article);
-				}
-				parseSearchResult(article);
-			}
-		}
+		// window.onload = () => {
+		// 	let urlParts = window.location.href.split("/");
+		// 	if (urlParts.indexOf("paper") !== -1) {
+		// 		addButtonOnArticlePage();
+		// 		let article = parseArticleOnPage();
+		// 		if (CONTENT_DEBUG) {
+		// 			console.log(article);
+		// 		}
+		// 		parseSearchResult(article);
+		// 	}
+		// }
 	
+		extractor = new SSExtractor("semantic", scholar.articleBlocksSelector, CONTENT_DEBUG);
 		let observerProps = {
 			childList: true,
 			subtree: true,
 			attributeFilter: ['style']
 		}
-	
 		let observer = new MutationObserver((mutations, obs) => {
 			mutations.forEach((mutation) => {
+				//  || document.readyState === "complete"
 				if (mutation.target.tagName === "TITLE") {
 					let url = window.location.href;
 					let newTitleName = mutation.target.innerText;
@@ -298,17 +299,17 @@ switch(scholar.name) {
 					}
 					if (url.search("/search") !== -1) {
 						createAddButtons();
-						parseSearchResult();
+						parseSearchResult(extractor);
 					} else if (url.search("/paper/") !== -1) {
 						addButtonOnArticlePage();
 						let article = parseArticleOnPage();
 						if (CONTENT_DEBUG) {
 							console.log(article);
 						}
-						parseSearchResult(article);
+						parseSearchResult(extractor, article);
 					} else if (url.search("/author/") !== -1) {
 						createAddButtons();
-						parseSearchResult();
+						parseSearchResult(extractor);
 					}
 				}
 			});

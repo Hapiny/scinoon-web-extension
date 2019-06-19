@@ -1,7 +1,7 @@
 class SciServer {
-	constructor(sciUrls, debug=false) {
+	constructor(sciUrls, debug) {
         this.sciUrls = sciUrls;
-        this.isDebug = debug;
+		this.isDebug = debug;
 	}
 
 	queryAddr(url) {
@@ -22,6 +22,7 @@ class SciServer {
 	}
 
 	saveAndProcessArticles(articles, sender) {
+		let verbose = this.isDebug;
 		browser.storage.local.get().then(data => {
 			var base = data.origin;
 			var id = sender.tab.id;
@@ -31,7 +32,7 @@ class SciServer {
 				url : base + this.queryAddr(url) + data.map,
 				data : articles,
 				success : function(data) {
-					if (this.isDebug) {
+					if (verbose) {
 						console.log("BG: normalized data arrives");
 					}
 					browser.tabs.sendMessage(id, {
@@ -40,7 +41,7 @@ class SciServer {
 					});
 				},
 				error : function(jqXHR, textStatus, errorThrown) {
-					if (this.isDebug) {
+					if (verbose) {
 						console.log("BG: normalized data error: " + textStatus + errorThrown);
 					}
 				},
@@ -75,13 +76,14 @@ class SciServer {
 	}
 
 	getTermsFromResearch(id) {
+		let verbose = this.isDebug;
 		browser.storage.local.get().then(data => {
 			let base = data.origin;
 			$.ajax({
 				type: "GET",
 				url: base + '/research/' + data.map + '/terms/getFromResearch/' + data.topCount,
 				success: function(data) {
-					if (this.isDebug) {
+					if (verbose) {
 						console.log("BG: terms from research arrives")
 						console.log(data);
 					}
@@ -91,7 +93,7 @@ class SciServer {
 					});
 				},
 				error : function(jqXHR, textStatus, errorThrown) {
-					if (this.isDebug) {
+					if (verbose) {
 						console.log("BG: terms extraction error: " + textStatus + errorThrown);
 					}
 				}
@@ -100,6 +102,7 @@ class SciServer {
 	}
 
 	getTermsFromClusters(id) {
+		let verbose = this.isDebug;
 		browser.storage.local.get().then(data => {
 			var base = data.origin;
 			$.ajax({
@@ -107,11 +110,11 @@ class SciServer {
 				url : base + '/research/' + data.map + '/terms/getFromClusters/' + data.topCount,
 				success : function(data) {
 					if (data.length == 0) {
-						if (this.isDebug) {
+						if (verbose) {
 							console.log("BG: there are no terms from clusters")
 						}
 					} else {
-						if (this.isDebug) {
+						if (verbose) {
 							console.log("BG: terms from cluster arrives");
 							console.log(data);
 						}
@@ -122,7 +125,7 @@ class SciServer {
 					}
 				},
 				error : function(jqXHR, textStatus, errorThrown) {
-					if (this.isDebug) {
+					if (verbose) {
 						console.log("BG: terms extraction error: " + textStatus + errorThrown);
 					}
 				}

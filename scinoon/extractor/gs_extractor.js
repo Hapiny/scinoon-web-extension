@@ -1,142 +1,105 @@
 class GSExtractor extends Extractor {
-    constructor(name="google") {
-        super(name);
-    }
-
-    parseOrigin(origin) {
-        var result = {}
-        var authors_publisher_year = origin.split("- ");
-        result["authors"] = authors_publisher_year[0].replace(/…/g, "").trim().split(", ")
-            .filter(function(a) { return !!a; })
-        if (authors_publisher_year.length > 2) {
-            var yearMatches = authors_publisher_year[1].match(/\d{4}/g);
-            if (yearMatches && yearMatches.length > 0) {
-                result["year"] = parseInt(yearMatches.pop());
-            }
-        }
-        return result;
+    constructor(name, blockSelector, verbose=false) {
+        super(name, blockSelector, verbose);
     }
 
     extract(doc) {
-        // Hardcode GS-specific XPaths
-		var commonPath = "//div[@id='gs_res_ccl_mid']/div[@class='gs_r gs_or gs_scl']/div[@class='gs_ri']";
-		var attr2path = {
-			"title" : "./h3[@class='gs_rt']",
-			"abstractText" : "./div[@class='gs_rs']",
-			"citesCount" : "./div[@class='gs_fl']/a[3]",
-			"citesQuery" : "./div[@class='gs_fl']/a[3]/@href"
-		};
+		let extractedArticles = [];
+        for (let block of this.blocks) {
+            let article = {};
+            let clusterIdField = block.querySelector("h3[class='gs_rt'] > a");
+            if (clusterIdField) {
+                article.clusterId = clusterIdField.getAttribute("data-clk").match(/$\d+$/);
+            }
+            article.title = this.getTitle(block, "h3[class='gs_rt']");
+            article.abstractText = this.getAbstract(block, "div[class='gs_rs']");
+            article.authors = this.getAuthors(block, "div[class='gs_a']");
+            article.year = this.getYear(block, "div[class='gs_a']");
+            article.citesCount = this.getCitesCount(block, "div[class='gs_fl'] > a:nth-child(3)");
+            article.citesQuery = this.getCitesQuery(block, "div[class='gs_fl'] > a:nth-child(3)");
+            article.textLink = this.getTextLink(block, "div.gs_ggs.gs_fl > div > div > a");
+            article.textType = this.getTextType(block, "div.gs_ggs.gs_fl > div > div > a > span.gs_ctg2");
 
-		var originPath = "./div[@class='gs_a']";
-		var versionsPath = "./div[@class='gs_fl']/a[@class='gs_nph']/@href"
+            if (article.citesQuery && !article.clusterId) {
+                let clusterIdMatch = /cites=(\d*)/.exec(article.citesQuery);
+                if (clusterIdMatch !== null && clusterIdMatch.length > 1) {
+                    article.clusterId = clusterIdMatch[1];
+                }
+            }
+            if (!article.clusterId) {
+                continue;
+            } else {
+                extractedArticles.push(article);
+            }
+        }
+		return extractedArticles;
+    }
 
-		var textLinkPath = "../div[@class='gs_ggs gs_fl']//a/@href",
-		    textTypePath = "../div[@class='gs_ggs gs_fl']//span[@class='gs_ctg2']";
+    getAbstract(block, abstractSelector) {
+        let abstractText = super.getAbstract(block, abstractSelector);
+        return abstractText.replace("…", "").trim();
+    }
 
-		var titlePrefixPath = "./h3[@class='gs_rt']/span[1]";
-		var citedArticleGlobalPath = "//*[@id='gs_res_ccl_top']/div/h2/a/@href";
+    getTitle(block, titleSelector) {
+        let title = super.getTitle(block, titleSelector);
+        let titlePrefix = block.querySelector("h3[class='gs_rt'] > span");
+        if (titlePrefix) {
+            titlePrefix = titlePrefix.innerText;
+            title = title.replace(titlePrefix, "").trim();
+        }
+        return title;
+    }
 
-		// For GS pages of citing articles extract cited article clusterId
-		var citedArticleHref = doc.evaluate(
-			citedArticleGlobalPath, 
-			doc, 
-			null,
-			XPathResult.FIRST_ORDERED_NODE_TYPE, 
-			null).singleNodeValue;
+    getTextType(block, textTypeSelector) {
+        let textTypeField = super.getTextType(block, textTypeSelector);
+        let textType = "";
+        if (textTypeField) {
+            textType = textTypeField.innerText.slice(1, -1);
+        }
+        return textType;
+    }
 
-		var citedArticleClusterId = null;
-		if (citedArticleHref != null) {
-			citedArticleClusterId = /cluster=(\d*)/.exec(citedArticleHref.value)[1];
-		}
+    getAuthors(block, authorsSelector) {
+        let authorsField = super.getAuthors(block, authorsSelector);
+        let authors = [];
+        if (authorsField.length) {
+            let authorsString = authorsField[0].innerText.split("- ")[0];
+            authors = authorsString.replace("…", "").trim().split(", ").filter((a) => { return !!a; });
+        }
+        if (this.verbose) {
+            console.log(authors);
+        }
+        return authors;
+    }
 
-		var itemIterator = doc.evaluate(commonPath, doc, null,
-				XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
-		var result = [];
-		try {
-			var thisNode = itemIterator.iterateNext();
-			while (thisNode) {
-				var article = {};
-				for ( var attr in attr2path) {
-					var elem = doc.evaluate(attr2path[attr], thisNode, null,
-							XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-					if (elem) {
-						article[attr] = elem.textContent;
-					}
-				}
+    getYear(block, yearSelector) {
+        let yearField = super.getAuthors(block, yearSelector);
+        let year = 2000;
+        if (yearField.length) {
+            let yearString = yearField[0].innerText.split("- ")[1];
+            year = parseInt(yearString.match(/\d{4}/g)[0]);
+        }
+        if (this.verbose) {
+            console.log(year);
+        }        
+        return year;
+    }
 
-				// Save clusterId for articles which have it
-				if (typeof article["citesQuery"] != "undefined") {
-					var clusterIdMatch = /cites=(\d*)/.exec(article["citesQuery"]);
-					if (clusterIdMatch != null && clusterIdMatch.length > 1) {
-						article["clusterId"] = clusterIdMatch[1];
-					}
-				}
+    getCitesCount(block, citesCountSelector) {
+        let citesCountField = block.querySelector(citesCountSelector);
+        let citesCount = 0;
+        if (citesCountField) {
+            citesCount = parseInt(citesCountField.innerText.match(/\d+/g)[0]);
+        }
+        return citesCount;
+    } 
 
-				if (typeof article["clusterId"] === "undefined") {
-					// Try to extract from All * versions link
-					var versionsUrl = doc.evaluate(versionsPath, thisNode, null,
-							XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-					if (versionsUrl) {
-						var clusterIdMatch = /cluster=(\d*)/.exec(versionsUrl.textContent);
-						if (clusterIdMatch != null && clusterIdMatch.length > 1) {
-							article["clusterId"] = clusterIdMatch[1];
-						}
-					}
-				}
-
-				if (typeof article["clusterId"] === "undefined") {
-					// Cannot process articles without clusterId
-					thisNode = itemIterator.iterateNext();
-					continue
-				}
-
-				// Postprocessing for citesCount
-				var citesCountMatch = article["citesCount"]
-						.match(/.*?(\d+)$/);
-				if (typeof citesCountMatch === "undefined"
-						|| citesCountMatch == null) {
-					article["citesCount"] = 0;
-				} else {
-					article["citesCount"] = parseInt(citesCountMatch[1]);
-				}
-
-				// Parse authors string
-				var originString = doc.evaluate(originPath, thisNode, null,
-						XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.textContent;
-				var originData = this.parseOrigin(originString);
-				for ( var a in originData) {
-					article[a] = originData[a];
-				}
-
-				// Add references
-				if (citedArticleClusterId != null) {
-					article["reference"] = citedArticleClusterId;
-				}
-
-				// Postprocessing for title
-				var titlePrefixElem = doc.evaluate(titlePrefixPath, thisNode, null,
-						XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-				if (titlePrefixElem) {
-					var prefix = titlePrefixElem.textContent;
-					article["title"] = article["title"].replace(prefix, "").trim();
-				}
-
-				// Add link to text (in pdf/html/etc.)
-				var textLinkElem = doc.evaluate(textLinkPath, thisNode, null,
-						XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-				var textTypeElem = doc.evaluate(textTypePath, thisNode, null,
-						XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-				if (textLinkElem && textTypeElem) {
-					article["textLink"] = textLinkElem.textContent;
-					article["textType"] = textTypeElem.textContent.slice(1, -1);
-				}
-
-				result.push(article);
-				thisNode = itemIterator.iterateNext();
-			}
-		} catch (e) {
-			console.log(e);
-		}
-		return result;
+    getCitesQuery(block, citesQuerySelector) {
+        let citesQueryField = block.querySelector(citesQuerySelector);
+        let citesQuery = "";
+        if (citesQueryField) {
+            citesQuery = citesQueryField.getAttribute("href");
+        }
+        return citesQuery;
     }
 }
