@@ -6,6 +6,11 @@ function parseArticleOnPage() {
     }];
     let articleHeader = document.getElementById("paper-header");
 
+    let moreAuthorsBtn = articleHeader.querySelector(".more-authors-label");
+    if (moreAuthorsBtn) {
+        moreAuthorsBtn.click();
+    }
+
     let authorsField = articleHeader.getElementsByClassName("author-list__link author-list__author-name");
     article.authors = [];
     if (authorsField.length) {
@@ -19,6 +24,11 @@ function parseArticleOnPage() {
                 }],
             });
         }
+    }
+
+    moreAuthorsBtn = articleHeader.querySelector(".more-authors-label");
+    if (moreAuthorsBtn) {
+        moreAuthorsBtn.click();
     }
 
     let doiField = articleHeader.querySelector('[data-selenium-selector="paper-doi"]');

@@ -41,140 +41,9 @@ function parseSearchResult(extractor, extractedData = undefined) {
 	});
 };
 
-function createTermsPanel() {
-	if (document.getElementById("terms_panel") !== null) {
-		return;
-	}
-	var termsPanel = document.createElement('div');
-	termsPanel.className = "scholar_terms_panel bootstrap";
-	termsPanel.id = "terms_panel"
-	
-	var titleBox = document.createElement('div');
-	titleBox.textContent = "Terms from current research map";
-	titleBox.className = "btn btn-lg btn-dark";
-	titleBox.id = "terms_panel_draggable"
-	
-	var centerBtn = document.createElement("center");
-	var openTermsBtn = document.createElement('div');
-	openTermsBtn.id = "open-btn";
-	openTermsBtn.textContent = "Show Terms";
-	openTermsBtn.className = "btn btn-primary";
-	openTermsBtn.style.display = "table-cell";
-
-	centerBtn.appendChild(openTermsBtn);
-	titleBox.appendChild(centerBtn);
-	termsPanel.appendChild(titleBox);
-	
-	var termsBox = document.createElement('div');
-	termsBox.id = "termsBox";
-	termsBox.style.display = "none";
-	termsBox.className = "scholar_terms_box";
-	
-	var researchTermsBox = document.createElement('div');
-	researchTermsBox.id = "researchTermsBox";
-	
-	
-	termsBox.appendChild(researchTermsBox);
-	termsPanel.appendChild(termsBox);
-	
-	document.body.appendChild(termsPanel);
-	openTermsBtn.addEventListener("click", () => {
-		var termsBoxDisplay = $("#termsBox")[0].style.display;
-		if (termsBoxDisplay === "none") {
-			$("#termsBox")[0].style.display = "block";
-			$("#open-btn")[0].innerText = "Close Terms";
-		} else {
-			$("#termsBox")[0].style.display = "none";
-			$("#open-btn")[0].innerText = "Show Terms";
-		}
-	});
-	makeDraggableElement(termsPanel);
-}
-
-function createAddButtons() {
-	let articleBlocks = $(scholar.articleBlocksSelector);
-	for (let index = 0; index < articleBlocks.length; index++) {
-		let bootstrapTag = document.createElement("div");
-		bootstrapTag.className = "bootstrap";
-		let button = document.createElement("button");
-		// button.id = `add_to_rm_${index}`;
-		button.type = "button";
-		button.className = "btn btn-primary btn-sm add_to_rm_button";
-		button.textContent = "Loading...";
-		bootstrapTag.appendChild(button);
-
-		if (articleBlocks[index].getElementsByClassName("add_to_rm_button").length === 0) {
-			articleBlocks[index].append(bootstrapTag);
-		}
-	}
-}
-
-function addButtonOnArticlePage() {
-	let btnField = document.getElementsByClassName("flex-container flex-wrap flex-paper-actions-group");
-	if (btnField.length) {
-		btnField = btnField[0];
-		let bootstrapTag = document.createElement("div");
-		bootstrapTag.className = "bootstrap";
-		let button = document.createElement("button");
-		button.id = `add_to_rm_${0}`;
-		button.type = "button";
-		button.style.marginTop = "10px";
-		button.style.marginLeft = "10px";
-		button.className = "btn btn-primary btn-sm add_to_rm_button";
-		button.textContent = "Loading...";
-		bootstrapTag.appendChild(button);
-
-		if (document.getElementById(`add_to_rm_${0}`) === null) {
-			btnField.append(bootstrapTag);
-		}
-		if (CONTENT_DEBUG) {
-			console.log("CONTENT: adding btn");
-		}
-	}
-}
-
-function addTermsTitle(text, termsBox) {
-	var title = document.createElement('p');
-	title.innerHTML = `<center><h3>${text}</h3></center>`;
-	termsBox.appendChild(title);
-}
-
-function addTermToList(term, termsList) {
-	var li = document.createElement('li');
-	li.innerHTML = 
-		`<span>
-			<a href='${baseLink + searchString + "+" + term}'>
-				<img src='${browser.extension.getURL("/icons/add.png")}' alt='+' style='vertical-align: -25%'/>
-			</a>
-			&nbsp;
-			<span class='term_text'>
-				<a href='http://${hostname}${scholar.searchPath}${term}'>${term}</a>
-			</span>
-		</span>`;
-	li.className = "term_list_item";
-	termsList.appendChild(li);
-}
-
-function addTermsGroup(name, terms, termsBox) {
-	var termsList = document.createElement('ul');
-	termsList.className = "terms_list";
-	addTermsTitle(name, termsBox);
-	if (terms.length == 0) {
-		var label = document.createElement('p');
-		label.innerHTML = "<center><font size=2>There are no extracted terms for this group</font></center>";
-		termsBox.appendChild(label);
-	} else {
-		for (let term of terms) {
-			addTermToList(term, termsList);
-		}
-		termsBox.appendChild(termsList);
-	}
-	
-}
-
 function handleExtractedTermsResearch(message) {
 	let termsBox = document.getElementById('researchTermsBox');
-	addTermsGroup('Common terms', message.data, termsBox);
+	addTermsGroup('Common terms', message.data, termsBox, searchString);
 }
 
 function handleExtractedTermsClusters(message) {
@@ -184,7 +53,7 @@ function handleExtractedTermsClusters(message) {
 	termsBox.appendChild(clustersTermsBox);
 	let clusterWithTermsList = message.data;
 	for (let clusterWithTerms of clusterWithTermsList) {
-		addTermsGroup(clusterWithTerms.clName, clusterWithTerms.terms, clustersTermsBox);
+		addTermsGroup(clusterWithTerms.clName, clusterWithTerms.terms, clustersTermsBox, searchString);
 	}
 }
 
@@ -235,10 +104,9 @@ function handleNormalizedData(message) {
                 let label = document.createElement("span");
 	        	label.className = "btn btn-info btn-sm";
 				label.innerHTML = "New";
-				label.style.marginLeft = "5px";
-				
+				label.style.marginRight = "5px";
 				bootstrapTag.appendChild(label)
-	        	titleField.appendChild(bootstrapTag);
+	        	titleField.insertBefore(bootstrapTag, titleField.firstChild);
 			}
         }
     }
@@ -270,19 +138,17 @@ switch(scholar.name) {
 		parseSearchResult(extractor);
 		break;
 	case "semantic":
-		// window.onload = () => {
-		// 	let urlParts = window.location.href.split("/");
-		// 	if (urlParts.indexOf("paper") !== -1) {
-		// 		addButtonOnArticlePage();
-		// 		let article = parseArticleOnPage();
-		// 		if (CONTENT_DEBUG) {
-		// 			console.log(article);
-		// 		}
-		// 		parseSearchResult(article);
-		// 	}
-		// }
-	
 		extractor = new SSExtractor("semantic", scholar.articleBlocksSelector, CONTENT_DEBUG);
+		
+		window.onload = () => {
+			let urlParts = window.location.href.split("/");
+			if (urlParts.indexOf("paper") !== -1) {
+				addButtonOnArticlePage();
+				let article = parseArticleOnPage();
+				parseSearchResult(extractor, article);
+			}
+		}
+	
 		let observerProps = {
 			childList: true,
 			subtree: true,
@@ -303,9 +169,6 @@ switch(scholar.name) {
 					} else if (url.search("/paper/") !== -1) {
 						addButtonOnArticlePage();
 						let article = parseArticleOnPage();
-						if (CONTENT_DEBUG) {
-							console.log(article);
-						}
 						parseSearchResult(extractor, article);
 					} else if (url.search("/author/") !== -1) {
 						createAddButtons();
