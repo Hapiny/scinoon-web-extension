@@ -48,6 +48,7 @@
                 "*://scholar.google.*/", 
                 "*scholar.google.*/scholar*", 
                 "*scholar.google.*/schhp*",
+                "*scholar.google.*/citations*",
                 "*://www.semanticscholar.*/", 
                 "*www.semanticscholar.*/search*",
                 "*://www.semanticscholar.org/*/*"

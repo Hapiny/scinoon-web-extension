@@ -145,10 +145,12 @@ function addTermsGroup(name, terms, termsBox, searchString) {
 }
 
 
-function createAddButtons() {
-	let articleBlocks = $(scholar.articleBlocksSelector);
-	for (let index = 0; index < articleBlocks.length; index++) {
-		addBtn(articleBlocks[index]);
+function createAddButtons(blocks=undefined) {
+    if (!blocks) {
+        blocks = $(scholar.articleBlocksSelector);
+    } 
+	for (let index = 0; index < blocks.length; index++) {
+		addBtn(blocks[index]);
 	}
 }
 

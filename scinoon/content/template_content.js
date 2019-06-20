@@ -3,6 +3,11 @@ const CONTENT_DEBUG = true;
 let $ = window.$.noConflict(true);
 let hostname = window.location.hostname;
 let extractor = undefined;
+let observerProps = {
+	childList: true,
+	subtree: true,
+	attributeFilter: ['style']
+}
 
 if (hostname.search("google") !== -1) {
 	var scholar = scholars.google;
@@ -27,7 +32,6 @@ function parseSearchResult(extractor, extractedData = undefined) {
 		var articles = extractor.extract(document);
 	} else {
 		var articles = extractedData;
-		extractor.getBlocks(".fresh-paper-detail-page__header");
 	}
 	if (CONTENT_DEBUG) {
 		console.log("CONTENT: extractor result")
@@ -79,7 +83,7 @@ function handleNormalizedData(message) {
 			let button = articleBlock.querySelector(".btn.add_to_rm_button");
 			if (button) {
 				button.innerText = "Add to research map";			
-				if (articleStatus["isExist"]) {
+				if (articleStatus.isExist) {
 					setAdded(button);
 				}
 				button.addEventListener("click", function(event) {
@@ -95,16 +99,18 @@ function handleNormalizedData(message) {
 				console.log($(".btn.add_to_rm_button"));
 			}
 			// Add "NEW" bage in Title Field of article
-            if (!articleStatus["isViewed"]) {
+            if (!articleStatus.isViewed) {
 				let titleField = scholar.titleFieldSeclector(articleBlock);
-				let bootstrapTag = document.createElement("div");
-				bootstrapTag.className = "bootstrap";
-                let label = document.createElement("span");
-	        	label.className = "btn btn-info btn-sm";
-				label.innerHTML = "New";
-				label.style.marginRight = "5px";
-				bootstrapTag.appendChild(label)
-	        	titleField.insertBefore(bootstrapTag, titleField.firstChild);
+				if (titleField) {
+					let bootstrapTag = document.createElement("div");
+					bootstrapTag.className = "bootstrap";
+					let label = document.createElement("span");
+					label.className = "btn btn-info btn-sm";
+					label.innerHTML = "New";
+					label.style.marginRight = "5px";
+					bootstrapTag.appendChild(label)
+					titleField.insertBefore(bootstrapTag, titleField.firstChild);
+				}
 			}
         }
     }
@@ -132,25 +138,39 @@ createTermsPanel();
 switch(scholar.name) {
 	case "google":
 		extractor = new GSExtractor("google", scholar.articleBlocksSelector, CONTENT_DEBUG);
-		createAddButtons();
-		parseSearchResult(extractor);
+		let url = window.location.href;
+		if (url.search("/citations?") !== -1) {
+			let extracted = extractor.extractArticlesFromAuthorPage();
+			createAddButtons(extractor.blocks);
+			parseSearchResult(extractor, extracted);
+			let observer = new MutationObserver((mutations, obs) => {
+				mutations.forEach((mutation) => {
+					if (mutation.target.tagName == "TBODY") {
+						let extracted = extractor.extractArticlesFromAuthorPage();
+						createAddButtons(extractor.blocks);
+						parseSearchResult(extractor, extracted);
+					}
+				});
+			});
+			observer.observe(document, observerProps);
+		} else {
+			createAddButtons();
+			parseSearchResult(extractor);
+		}
 		break;
 	case "semantic":
 		extractor = new SSExtractor("semantic", scholar.articleBlocksSelector, CONTENT_DEBUG);
 		
 		window.onload = () => {
-			let urlParts = window.location.href.split("/");
-			if (urlParts.indexOf("paper") !== -1) {
+			let url = window.location.href;
+			if (url.search("/paper/") !== -1) {
 				addButtonOnArticlePage();
 				let article = extractor.extractArticleFromPage();
 				parseSearchResult(extractor, article);
+			} else if (url.search("/author/") !== -1) {
+				createAddButtons();
+				parseSearchResult(extractor);
 			}
-		}
-	
-		let observerProps = {
-			childList: true,
-			subtree: true,
-			attributeFilter: ['style']
 		}
 		let observer = new MutationObserver((mutations, obs) => {
 			mutations.forEach((mutation) => {

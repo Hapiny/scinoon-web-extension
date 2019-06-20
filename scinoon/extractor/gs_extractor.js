@@ -121,7 +121,7 @@ class GSExtractor extends Extractor {
     getCitesCount(block, citesCountSelector) {
         let citesCountField = block.querySelector(citesCountSelector);
         let citesCount = 0;
-        if (citesCountField) {
+        if (citesCountField && citesCountField.innerText) {
             citesCount = parseInt(citesCountField.innerText.match(/\d+/g)[0]);
         }
         return citesCount;
@@ -146,7 +146,42 @@ class GSExtractor extends Extractor {
             references.link  = window.location.hostname + this.getCitesQuery(block, refencesSelector);
             references.amout = this.getCitesCount(block, refencesSelector);
             references.ids   = [];
+            // console.log(references);
         }
         return references;
+    }
+
+    extractArticlesFromAuthorPage() {
+        let articleBlocks = document.querySelectorAll(".gsc_a_tr");
+        let extractedArticles = [];
+        this.blocks = [];
+        if (articleBlocks.length) {
+            for (let block of articleBlocks) {
+                let article = {
+                    ids : [],
+                }
+                let articleId = undefined;
+                article.year = super.getYear(block, ".gsc_a_y");
+                article.title = super.getTitle(block, ".gsc_a_t > a");
+                article.authors = this.getAuthors(block, ".gsc_a_t > div.gs_gray");
+                article.incomingRefs = this.getIncomingRefs(block, ".gsc_a_c > a");
+
+                if (article.incomingRefs.link) {
+                    article.incomingRefs.link = article.incomingRefs.link.slice(17);
+                    let match_ = article.incomingRefs.link.match(/\d+/g);
+                    if (match_) {
+                        articleId = match_[0];
+                    }
+                }
+                if (!articleId) {
+                    continue;
+                } else {
+                    article.ids.push({id : articleId, src : "google-scholar"});
+                    this.blocks.push(block);
+                    extractedArticles.push(article);
+                }
+            }
+        }
+        return extractedArticles;
     }
 }
