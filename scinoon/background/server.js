@@ -12,31 +12,59 @@ class SciServer {
 
 	saveAndProcessArticles(articles, sender) {
 		let verbose = this.isDebug;
+		let response = undefined;
 		browser.storage.local.get().then(data => {
 			var base = data.origin;
 			var id = sender.tab.id;
-			var url = sender.url;
-			$.ajax({
-				type : "POST",
-				url : base + "/ext/" + data.map,
-				data : articles,
-				success : function(data) {
-					if (verbose) {
-						console.log("BG: normalized data arrives");
-					}
-					browser.tabs.sendMessage(id, {
-						name: messages.NORMALIZED_DATA,
-						data: data
-					});
-				},
-				error : function(jqXHR, textStatus, errorThrown) {
-					if (verbose) {
-						console.log("BG: normalized data error: " + textStatus + errorThrown);
-					}
-				},
-				dataType : "json",
-				contentType : "application/json"
-			});
+			let makeRequest = (articles) => {
+				let isSuccess = true;
+				$.ajax({
+					type : "POST",
+					url : base + "/ext/" + data.map,
+					data : articles,
+					async: false,
+					success : function(data) {
+						if (verbose) {
+							console.log("BG: normalized data arrives");
+						}
+						isSuccess = data;
+					},
+					error : function(jqXHR, textStatus, errorThrown) {
+						if (jqXHR.status === 413) {
+							articles = JSON.parse(articles);
+							let lenHalf = (articles.length / 2 >> 0) + 1;
+							if (verbose) {
+								console.log(`BG: too many articles (${articles.length})`);
+							}
+							isSuccess = []; 
+							for (let i of [0, 1]) {
+								let response = makeRequest(JSON.stringify(articles.slice(i * lenHalf, (i + 1) * lenHalf)));
+								if (typeof response !== "boolean") {
+									isSuccess.push(...response);
+								} else {
+									isSuccess = true;
+									break;
+								}
+							}
+						}
+					},
+					dataType : "json",
+					contentType : "application/json"
+				});
+				console.log(isSuccess);
+				return isSuccess;
+			}
+
+			response = makeRequest(articles);
+			if (typeof response !== "boolean") {
+				browser.tabs.sendMessage(id, {
+					name: messages.NORMALIZED_DATA,
+					data: response
+				});
+			} else if (verbose) {
+				console.log("BG: normalized data error: ");
+			}
+
 		}, this.onError);
 
 	}

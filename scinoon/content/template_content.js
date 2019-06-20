@@ -38,11 +38,11 @@ function parseSearchResult(extractor, extractedData = undefined) {
 		console.log(articles);
 	}
 	browser.runtime.sendMessage({
-	    name: messages.RETURN_EXTRACTED,
-	    data: {
-	    	url : window.location.href,
-	    	articles : articles
-	    }
+		name: messages.RETURN_EXTRACTED,
+		data: {
+			url : window.location.href,
+			articles : articles
+		}
 	});
 };
 
@@ -147,6 +147,7 @@ switch(scholar.name) {
 				mutations.forEach((mutation) => {
 					if (mutation.target.tagName == "TBODY") {
 						let extracted = extractor.extractArticlesFromAuthorPage();
+						removeAllNodes("#gsc_a_b", ".bootstrap");
 						createAddButtons(extractor.blocks);
 						parseSearchResult(extractor, extracted);
 					}

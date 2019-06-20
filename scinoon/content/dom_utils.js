@@ -158,3 +158,15 @@ function addButtonOnArticlePage() {
 	let btnField = document.querySelector(".flex-container.flex-wrap.flex-paper-actions-group");
 	addBtn(btnField);
 }
+
+function removeAllNodes(buttonsDestinationSelector, removeNodesSelector) {
+    let parentNode = document.querySelector(buttonsDestinationSelector);
+    if (parentNode) {
+        let removeNodes = parentNode.querySelectorAll(removeNodesSelector);
+        if (removeNodes.length) {
+            for (let node of removeNodes) {
+                node.style.display = "none";
+            }
+        }
+    }
+}
