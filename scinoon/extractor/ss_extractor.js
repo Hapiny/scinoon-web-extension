@@ -19,16 +19,17 @@ class SSExtractor extends Extractor {
 			};
 			article.ids.push(info);
 			
-			article.authors = this.getAuthors(block, ".author-list__link");
-            article.textUrl = this.getTextLink(block, ".icon-button.paper-link");
-            article.textType = this.getTextType(block, ".icon-button.paper-link");
-            article.title = this.getTitle(block, ".search-result-title");
-			article.year = this.getYear(block, '[data-selenium-selector="paper-year"]');
+			article.authors      = this.getAuthors(block, ".author-list__link");
+            article.textUrl      = this.getTextLink(block, ".icon-button.paper-link");
+            article.textType     = this.getTextType(block, ".icon-button.paper-link");
+            article.title        = this.getTitle(block, ".search-result-title");
+			article.year         = this.getYear(block, '[data-selenium-selector="paper-year"]');
 			article.abstractText = this.getAbstract(block, ".abstract");
-            article.bibtex = this.getBibtex(block, 
+            article.bibtex       = this.getBibtex(block, 
                 ".formatted-citation.formatted-citation--style-bibtex",
                 '[data-selenium-selector="cite-link"]',
                 ".close-modal-button")
+            article.publicationSource = this.getPublicationSource(block, '[data-selenium-selector="venue-metadata"]');
 
             extractedArticles.push(article);
         }
@@ -131,6 +132,20 @@ class SSExtractor extends Extractor {
         return bibtex;
     }
 
+    getPublicationSource(block, sourceSelector) {
+        let sourceField = block.querySelector(sourceSelector);
+        let source = {
+            name : "",
+        };
+        if (!sourceField && this.verbose) {
+            console.log(`EXTRACTOR (${this.name}): publication source isn't extracted`);
+        } else if (this.verbose) {
+            source.name = sourceField.innerText;
+            console.log(`EXTRACTOR (${this.name}): extracted publication source = ${source.name}`);
+        }
+        return source;
+    }
+
     extractArticleFromPage(articleBlockSelector=".fresh-paper-detail-page__header") {
         let article = {
             ids : [{
@@ -162,11 +177,16 @@ class SSExtractor extends Extractor {
             "REFERENCES",
             '[data-selenium-selector="reference"]',
             ".citation__title > a");
-
+        article.similarArticleRefs = this.getArticleReferencesFromPage('[data-heap-nav="similar-papers"]',
+            "SIMILAR PAPERS",
+            '[data-selenium-selector="related-papers-list"]',
+            'a[data-selenium-selector="title-link"]',
+            false);
+        article.publicationSource = this.getPublicationSource(articleBlock, '[data-selenium-selector="venue-metadata"]');
         return [article];
     }
 
-    getArticleReferencesFromPage(referencesSelector, replaceWord, referencesBlockSelector, refSelector) {
+    getArticleReferencesFromPage(referencesSelector, replaceWord, referencesBlockSelector, refSelector, withAmount=true) {
         let referencesField = document.querySelector(referencesSelector);
         let result = {};
         if (!referencesField && this.verbose) {
@@ -174,12 +194,17 @@ class SSExtractor extends Extractor {
         } else if (this.verbose) {
             console.log(`EXTRACTOR (${this.name}): extracted refenreces`);
             result.link = window.location.href + referencesField.getAttribute("href");
-            result.amount = parseInt(referencesField.innerText.replace(replaceWord, "").match(/\d/g).join(""));
+            if (withAmount) {
+                result.amount = parseInt(referencesField.innerText.replace(replaceWord, "").match(/\d/g).join(""));
+            }
             result.ids = [];
             let referenceBlock = document.querySelector(referencesBlockSelector);
             if (referenceBlock) {
                 let references = referenceBlock.querySelectorAll(refSelector);
                 if (references.length) {
+                    if (!withAmount) {
+                        result.amount = references.length;
+                    }
                     for (let i = 0; i < references.length; i++) {
                         let refUrl = references[i].getAttribute("href");
                         result.ids.push({
