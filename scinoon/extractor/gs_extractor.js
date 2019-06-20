@@ -14,15 +14,15 @@ class GSExtractor extends Extractor {
             if (clusterIdField) {
                 articleId = clusterIdField.getAttribute("data-clk").match(/$\d+$/);
             }
-            article.title = this.getTitle(block, "h3[class='gs_rt']");
+            article.title        = this.getTitle(block, "h3[class='gs_rt']");
             article.abstractText = this.getAbstract(block, "div[class='gs_rs']");
-            article.authors = this.getAuthors(block, "div[class='gs_a']");
-            article.year = this.getYear(block, "div[class='gs_a']");
-            // article.citesCount = this.getCitesCount(block, "div[class='gs_fl'] > a:nth-child(3)");
-            // article.citesQuery = this.getCitesQuery(block, "div[class='gs_fl'] > a:nth-child(3)");
-            let citesQuery = this.getCitesQuery(block, "div[class='gs_fl'] > a:nth-child(3)");
-            article.textUrl = this.getTextLink(block, "div.gs_ggs.gs_fl > div > div > a");
-            article.textType = this.getTextType(block, "div.gs_ggs.gs_fl > div > div > a > span.gs_ctg2");
+            article.authors      = this.getAuthors(block, "div[class='gs_a']");
+            article.year         = this.getYear(block, "div[class='gs_a']");
+
+            let citesQuery       = this.getCitesQuery(block, "div[class='gs_fl'] > a:nth-child(3)");
+            article.textUrl      = this.getTextLink(block, "div.gs_ggs.gs_fl > div > div > a");
+            article.textType     = this.getTextType(block, "div.gs_ggs.gs_fl > div > div > a > span.gs_ctg2");
+            article.incomingRefs = this.getIncomingRefs(block, "div[class='gs_fl'] > a:nth-child(3)");
 
             if (citesQuery && !articleId) {
                 let clusterIdMatch = /cites=(\d*)/.exec(citesQuery);
@@ -80,7 +80,7 @@ class GSExtractor extends Extractor {
                     if (match_[3]) {
                         author.fullName = match_[3];
                     }
-                    
+
                     if (match_[2]) {
                         let authorUrl = match_[2];
                         let authorId = "";
@@ -134,5 +134,19 @@ class GSExtractor extends Extractor {
             citesQuery = citesQueryField.getAttribute("href");
         }
         return citesQuery;
+    }
+
+    getIncomingRefs(block, refencesSelector) {
+        let refenrecesField = block.querySelector(refencesSelector);
+        let references = {};
+        if (!refenrecesField && this.verbose) {
+            console.log(`EXTRACTOR (${this.name}): incoming references aren't extracted`);
+        } else if (this.verbose) {
+            console.log(`EXTRACTOR (${this.name}): extracted incoming references`);
+            references.link  = window.location.hostname + this.getCitesQuery(block, refencesSelector);
+            references.amout = this.getCitesCount(block, refencesSelector);
+            references.ids   = [];
+        }
+        return references;
     }
 }

@@ -154,7 +154,43 @@ class SSExtractor extends Extractor {
             ".formatted-citation.formatted-citation--style-bibtex",
             '[data-selenium-selector="cite-link"]',
             ".close-modal-button")
+        article.incomingRefs = this.getArticleReferencesFromPage('[data-heap-nav="citing-papers"]', 
+            "CITATIONS",
+            '[data-selenium-selector="cited-by"]',
+            ".citation__title > a");
+        article.outgoingRefs = this.getArticleReferencesFromPage('[data-heap-nav="references"]', 
+            "REFERENCES",
+            '[data-selenium-selector="reference"]',
+            ".citation__title > a");
 
         return [article];
+    }
+
+    getArticleReferencesFromPage(referencesSelector, replaceWord, referencesBlockSelector, refSelector) {
+        let referencesField = document.querySelector(referencesSelector);
+        let result = {};
+        if (!referencesField && this.verbose) {
+            console.log(`EXTRACTOR (${this.name}): refences aren't extracted`);
+        } else if (this.verbose) {
+            console.log(`EXTRACTOR (${this.name}): extracted refenreces`);
+            result.link = window.location.href + referencesField.getAttribute("href");
+            result.amount = parseInt(referencesField.innerText.replace(replaceWord, "").match(/\d/g).join(""));
+            result.ids = [];
+            let referenceBlock = document.querySelector(referencesBlockSelector);
+            if (referenceBlock) {
+                let references = referenceBlock.querySelectorAll(refSelector);
+                if (references.length) {
+                    for (let i = 0; i < references.length; i++) {
+                        let refUrl = references[i].getAttribute("href");
+                        result.ids.push({
+                            id  : refUrl.split("/").slice(-1)[0],
+                            src : window.location.hostname + refUrl,
+                        });
+                    }
+                }
+            }
+            console.log(result);
+        }
+        return result;
     }
 }
