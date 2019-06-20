@@ -27,6 +27,7 @@ function parseSearchResult(extractor, extractedData = undefined) {
 		var articles = extractor.extract(document);
 	} else {
 		var articles = extractedData;
+		extractor.getBlocks(".fresh-paper-detail-page__header");
 	}
 	if (CONTENT_DEBUG) {
 		console.log("CONTENT: extractor result")
@@ -68,17 +69,14 @@ function handleNormalizedData(message) {
 		console.log("CONTENT: handle normalized data");
 		console.log(normalizedArticlesStatus);
 	}
-	let articleBlocks = $(scholar.articleBlocksSelector);
 
-    for (let index = 0; index < normalizedArticlesStatus.length; ++index) {
+	let articleBlocks = extractor.blocks;
+    for (let index = 0; index < normalizedArticlesStatus.length; index++) {
         let articleStatus = normalizedArticlesStatus[index];
-        let articleId = articleStatus["article"]["id"];
+        let articleId = articleStatus.article.id;
         if (articleId.sourceName === scholar.articleSourceName) {
-            let scholarId = articleId.privateId;
-            let blockFilter = scholar.getBlockFilter(scholarId);
-
-			let articleBlock = articleBlocks.has(blockFilter);
-			let button = $(".btn.add_to_rm_button")[index];
+			let articleBlock = articleBlocks[index];
+			let button = articleBlock.querySelector(".btn.add_to_rm_button");
 			if (button) {
 				button.innerText = "Add to research map";			
 				if (articleStatus["isExist"]) {
@@ -98,7 +96,7 @@ function handleNormalizedData(message) {
 			}
 			// Add "NEW" bage in Title Field of article
             if (!articleStatus["isViewed"]) {
-				let titleField = scholar.titleFieldSeclector(articleBlock[0]);
+				let titleField = scholar.titleFieldSeclector(articleBlock);
 				let bootstrapTag = document.createElement("div");
 				bootstrapTag.className = "bootstrap";
                 let label = document.createElement("span");

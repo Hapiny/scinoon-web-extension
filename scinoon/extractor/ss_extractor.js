@@ -6,10 +6,11 @@ class SSExtractor extends Extractor {
     extract(doc) {
         let extractedArticles = [];
         // in function extract guaranteed that the page is loaded
-		if (!this.blocks.length) {
-            console.log("refilling blocks");
-            this.getBlocks();
-        }
+        this.getBlocks();
+		// if (!this.blocks.length) {
+        //     console.log("refilling blocks");
+        //     this.getBlocks();
+        // }
 
 		for (let block of this.blocks) {
 			let article = {

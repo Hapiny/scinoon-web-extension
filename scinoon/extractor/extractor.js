@@ -21,8 +21,9 @@ class Extractor {
 		return result;
 	};
 
-	getBlocks() {
-		this.blocks = document.querySelectorAll(this.blockSelector);
+	getBlocks(blockSelector=this.blockSelector) {
+		this.blocks = document.querySelectorAll(blockSelector);
+		return this.blocks;
 	}
 
 	getTitle(block, titleSelector) {

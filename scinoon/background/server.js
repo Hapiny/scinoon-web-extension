@@ -29,7 +29,8 @@ class SciServer {
 			var url = sender.url;
 			$.ajax({
 				type : "POST",
-				url : base + this.queryAddr(url) + data.map,
+				// url : base + this.queryAddr(url) + data.map,
+				url : base + "/ext/" + data.map,
 				data : articles,
 				success : function(data) {
 					if (verbose) {

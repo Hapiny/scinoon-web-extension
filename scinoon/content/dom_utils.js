@@ -47,7 +47,7 @@ function addBtn(btnField, btnClassList="btn btn-primary btn-sm add_to_rm_button"
     if (!btnField.querySelector(".flex-item.alternate-sources-dropdown")) {
         btn.style.marginLeft = "10px";
     }
-    if (!btnField.querySelector(".add_to_rm_field") && check) {
+    if (!btnField.querySelector(".add_to_rm_button") && check) {
         let bootstrapTag = document.createElement("div");
         bootstrapTag.className = "bootstrap";
         bootstrapTag.appendChild(btn);

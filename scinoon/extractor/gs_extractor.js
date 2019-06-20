@@ -6,29 +6,34 @@ class GSExtractor extends Extractor {
     extract(doc) {
 		let extractedArticles = [];
         for (let block of this.blocks) {
-            let article = {};
+            let article = {
+                ids : [],
+            };
+            let articleId = undefined;
             let clusterIdField = block.querySelector("h3[class='gs_rt'] > a");
             if (clusterIdField) {
-                article.clusterId = clusterIdField.getAttribute("data-clk").match(/$\d+$/);
+                articleId = clusterIdField.getAttribute("data-clk").match(/$\d+$/);
             }
             article.title = this.getTitle(block, "h3[class='gs_rt']");
             article.abstractText = this.getAbstract(block, "div[class='gs_rs']");
             article.authors = this.getAuthors(block, "div[class='gs_a']");
             article.year = this.getYear(block, "div[class='gs_a']");
-            article.citesCount = this.getCitesCount(block, "div[class='gs_fl'] > a:nth-child(3)");
-            article.citesQuery = this.getCitesQuery(block, "div[class='gs_fl'] > a:nth-child(3)");
-            article.textLink = this.getTextLink(block, "div.gs_ggs.gs_fl > div > div > a");
+            // article.citesCount = this.getCitesCount(block, "div[class='gs_fl'] > a:nth-child(3)");
+            // article.citesQuery = this.getCitesQuery(block, "div[class='gs_fl'] > a:nth-child(3)");
+            let citesQuery = this.getCitesQuery(block, "div[class='gs_fl'] > a:nth-child(3)");
+            article.textUrl = this.getTextLink(block, "div.gs_ggs.gs_fl > div > div > a");
             article.textType = this.getTextType(block, "div.gs_ggs.gs_fl > div > div > a > span.gs_ctg2");
 
-            if (article.citesQuery && !article.clusterId) {
-                let clusterIdMatch = /cites=(\d*)/.exec(article.citesQuery);
+            if (citesQuery && !articleId) {
+                let clusterIdMatch = /cites=(\d*)/.exec(citesQuery);
                 if (clusterIdMatch !== null && clusterIdMatch.length > 1) {
-                    article.clusterId = clusterIdMatch[1];
+                    articleId = clusterIdMatch[1];
                 }
             }
-            if (!article.clusterId) {
+            if (!articleId) {
                 continue;
             } else {
+                article.ids.push({id : articleId, src : "google-scholar"});
                 extractedArticles.push(article);
             }
         }
@@ -63,8 +68,36 @@ class GSExtractor extends Extractor {
         let authorsField = super.getAuthors(block, authorsSelector);
         let authors = [];
         if (authorsField.length) {
-            let authorsString = authorsField[0].innerText.split("- ")[0];
-            authors = authorsString.replace("…", "").trim().split(", ").filter((a) => { return !!a; });
+            let authorsElems = authorsField[0].innerHTML.split("&nbsp")[0].replace("…", "").trim().split(", ");
+            for (let elem of authorsElems) {
+                let match_ = elem.match(/(<a href="(.*?)">)?([A-Za-z ]+)(<\/a>)?/);
+                if (match_) {
+                    let author = {
+                        fullName : "",
+                        ids : [],
+                    };
+
+                    if (match_[3]) {
+                        author.fullName = match_[3];
+                    }
+                    
+                    if (match_[2]) {
+                        let authorUrl = match_[2];
+                        let authorId = "";
+                        let authorIdMatch = authorUrl.match(/user=(\w+)&/);
+                        if (authorIdMatch) {
+                            authorId = authorIdMatch[1];
+                        }
+                        author.ids.push({
+                            id  : authorId,
+                            src : window.location.hostname + authorUrl,
+                        });
+                    }
+                    if (author.fullName !== "") {
+                        authors.push(author);
+                    }
+                }
+            }
         }
         if (this.verbose) {
             console.log(authors);

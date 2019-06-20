@@ -55,11 +55,12 @@
             "js": [
                 "browser-polyfill.js", 
                 "utils.js", 
-                "content/semantic_utils.js",
+                "extractor/semantic_utils.js",
                 "lib/jquery-3.2.1.min.js",
                 "extractor/extractor.js", 
                 "extractor/ss_extractor.js", 
                 "extractor/gs_extractor.js", 
+                "content/dom_utils.js",
                 "content/template_content.js"
             ],
             "css": [
