@@ -55,7 +55,6 @@
             "js": [
                 "browser-polyfill.js", 
                 "utils.js", 
-                "extractor/semantic_utils.js",
                 "lib/jquery-3.2.1.min.js",
                 "extractor/extractor.js", 
                 "extractor/ss_extractor.js", 

@@ -7,10 +7,6 @@ class SSExtractor extends Extractor {
         let extractedArticles = [];
         // in function extract guaranteed that the page is loaded
         this.getBlocks();
-		// if (!this.blocks.length) {
-        //     console.log("refilling blocks");
-        //     this.getBlocks();
-        // }
 
 		for (let block of this.blocks) {
 			let article = {
@@ -29,15 +25,19 @@ class SSExtractor extends Extractor {
             article.title = this.getTitle(block, ".search-result-title");
 			article.year = this.getYear(block, '[data-selenium-selector="paper-year"]');
 			article.abstractText = this.getAbstract(block, ".abstract");
+            article.bibtex = this.getBibtex(block, 
+                ".formatted-citation.formatted-citation--style-bibtex",
+                '[data-selenium-selector="cite-link"]',
+                ".close-modal-button")
 
             extractedArticles.push(article);
         }
 		return extractedArticles;
     }
 
-    getAuthors(block, authorsSelector) {
+    getAuthors(block, authorsSelector, moreAuthorsBtn=".more-authors-label") {
         let authors = []
-        let moreAuthorsButton = block.querySelector(".more-authors-label");
+        let moreAuthorsButton = block.querySelector(moreAuthorsBtn);
         // click to get full list of authors
         if (moreAuthorsButton) {
             moreAuthorsButton.click();
@@ -56,7 +56,7 @@ class SSExtractor extends Extractor {
             authors.push(author);
         }
 
-        moreAuthorsButton = block.querySelector(".more-authors-label");
+        moreAuthorsButton = block.querySelector(moreAuthorsBtn);
         // hide list of authors
         if (moreAuthorsButton) {
             moreAuthorsButton.click();
@@ -70,13 +70,13 @@ class SSExtractor extends Extractor {
         return authors;
     }
 
-    getAbstract(block, abstractSelector) {
-        let moreAbstractButton = block.querySelector(".more.mod-clickable");
+    getAbstract(block, abstractSelector, moreBtnSelector=".more.mod-clickable", trunc=7) {
+        let moreAbstractButton = block.querySelector(moreBtnSelector);
         if (moreAbstractButton) {
             moreAbstractButton.click(); // click to get full abstract
         }
 
-        let abstract = super.getAbstract(block, abstractSelector).slice(0, -7);
+        let abstract = super.getAbstract(block, abstractSelector).slice(0, -trunc);
 
         if (moreAbstractButton) {
             moreAbstractButton.click(); // click to hide full abstract
@@ -94,5 +94,67 @@ class SSExtractor extends Extractor {
             }
         }
         return textType;
+    }
+
+    getBibtex(block, bibtexSelector, openBibtexBtnSelector, closeBibtexBtnSelector) {
+        let openBibtexBtn = block.querySelector(openBibtexBtnSelector);
+        if (openBibtexBtn) {
+            openBibtexBtn.click();
+        } else {
+            console.log("No open BTN!!!!!");
+            return;
+        }
+
+        let bibtexField = document.querySelector(bibtexSelector);
+        let bibtex = "";
+        if (bibtexField) {
+            bibtex = bibtexField.innerText;
+        } else {
+            console.log("No bibtex field!!!!!");
+            console.log(block);
+            console.log(bibtexSelector);
+            return;
+        }
+
+        let closeBibtexBtn = document.querySelector(closeBibtexBtnSelector);
+        if (closeBibtexBtn) {
+            closeBibtexBtn.click();
+        } else {
+            console.log("No close BTN!!!!!");
+            return;
+        }
+        if (!bibtex && this.verbose) {
+            console.log(`EXTRACTOR (${this.name}): bibtex isn't extracted`);
+        } else if (this.bibtex) {
+            console.log(`EXTRACTOR (${this.name}): extracted bibtex = ${bibtex.slice(0, 20)}...`);
+        }
+        return bibtex;
+    }
+
+    extractArticleFromPage(articleBlockSelector=".fresh-paper-detail-page__header") {
+        let article = {
+            ids : [{
+                id  : window.location.href.split("/").slice(-1)[0],
+                src : "semantic-scholar"
+            }],
+        };
+        let articleBlock = document.querySelector(articleBlockSelector);
+
+        let doiField = articleBlock.querySelector('[data-selenium-selector="paper-doi"]');
+        if (doiField) {
+            article.doi = doiField.innerText;
+        }
+        article.title        = this.getTitle(articleBlock, '[data-selenium-selector="paper-detail-title"]');
+        article.abstractText = this.getAbstract(articleBlock, 
+                ".text-truncator.abstract__text.text--preline", 
+                '[data-selenium-selector="text-truncator-toggle"]', 5)
+        article.authors      = this.getAuthors(articleBlock, ".author-list__link.author-list__author-name");
+        article.year         = this.getYear(articleBlock, '[data-selenium-selector="paper-year"]');
+        article.bibtex = this.getBibtex(articleBlock, 
+            ".formatted-citation.formatted-citation--style-bibtex",
+            '[data-selenium-selector="cite-link"]',
+            ".close-modal-button")
+
+        return [article];
     }
 }

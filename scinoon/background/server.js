@@ -4,17 +4,6 @@ class SciServer {
 		this.isDebug = debug;
 	}
 
-	queryAddr(url) {
-		let addr = "";
-		if (url.search("semanticscholar") !== -1 ) {
-			addr = '/ext/';
-		}	
-		if (url.search("scholar.google") !== -1 ) {
-			addr = '/scholar/';
-		}	
-		return addr;
-	}
-
 	onError(error) {
 		if (this.isDebug) {
 			console.log(`BG: error ${error}`);
@@ -29,7 +18,6 @@ class SciServer {
 			var url = sender.url;
 			$.ajax({
 				type : "POST",
-				// url : base + this.queryAddr(url) + data.map,
 				url : base + "/ext/" + data.map,
 				data : articles,
 				success : function(data) {
@@ -54,11 +42,12 @@ class SciServer {
 	}
 
 	saveResearchMap(articles, callback, map) {
+		let verbose = this.isDebug;
 		browser.storage.local.get().then(data => {
 			let base = data.origin;
 			map = typeof map !== 'undefined' ? map : data.map;
 			if (map == null) {
-				if (this.isDebug) {
+				if (verbose) {
 					console.log("BG: warn! unsetted research map name.");
 				}
 				map = "demo";

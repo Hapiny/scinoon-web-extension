@@ -142,7 +142,7 @@ switch(scholar.name) {
 			let urlParts = window.location.href.split("/");
 			if (urlParts.indexOf("paper") !== -1) {
 				addButtonOnArticlePage();
-				let article = parseArticleOnPage();
+				let article = extractor.extractArticleFromPage();
 				parseSearchResult(extractor, article);
 			}
 		}
@@ -161,16 +161,13 @@ switch(scholar.name) {
 					if (CONTENT_DEBUG) {
 						console.log(`CONTENT: new title "${newTitleName}"`);
 					}
-					if (url.search("/search") !== -1) {
+					if (url.search("/search") !== -1 || url.search("/author/") !== -1) {
 						createAddButtons();
 						parseSearchResult(extractor);
 					} else if (url.search("/paper/") !== -1) {
 						addButtonOnArticlePage();
-						let article = parseArticleOnPage();
+						let article = extractor.extractArticleFromPage();
 						parseSearchResult(extractor, article);
-					} else if (url.search("/author/") !== -1) {
-						createAddButtons();
-						parseSearchResult(extractor);
 					}
 				}
 			});
