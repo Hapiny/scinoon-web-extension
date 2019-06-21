@@ -41,5 +41,20 @@ var scholars = {
 		titleFieldSeclector   : (block) => {
 			return block.querySelector(".search-result-title");
 		},
+	},
+	arxiv : {
+		name            : "arxiv",
+		searchPath      : "/search/?searchtype=all&source=header&query=",
+		getSearchString : () => {
+			let searchString = document.getElementById("query");
+			if (searchString) {
+				return searchString.value;
+			}
+		},
+		articleBlocksSelector : ".arxiv-result",
+		articleSourceName     : "ext-arxiv",
+		titleFieldSeclector   : (block) => {
+			return block.querySelector(".title.is-5.mathjax");
+		},
 	}
 };

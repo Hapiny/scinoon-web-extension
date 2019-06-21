@@ -9,10 +9,13 @@ let observerProps = {
 	attributeFilter: ['style']
 }
 
+let scholar = undefined;
 if (hostname.search("google") !== -1) {
-	var scholar = scholars.google;
+	scholar = scholars.google;
 } else if (hostname.search("semantic") !== -1) {
-	var scholar = scholars.semantic;
+	scholar = scholars.semantic;
+} else if (hostname.search() !== -1) {
+	scholar = scholars.arxiv;
 }
 
 let baseLink = `http://${hostname}${scholar.searchPath}`;
@@ -138,7 +141,7 @@ createTermsPanel();
 switch(scholar.name) {
 	case "google":
 		extractor = new GSExtractor("google", scholar.articleBlocksSelector, CONTENT_DEBUG);
-		let url = window.location.href;
+		var url = window.location.href;
 		if (url.search("/citations?") !== -1) {
 			let extracted = extractor.extractArticlesFromAuthorPage();
 			createAddButtons(extractor.blocks);
@@ -196,6 +199,12 @@ switch(scholar.name) {
 		observer.observe(document, observerProps);
 		break;
 	case "arxiv":
-		createTermsPanel();
-		parseSearchResult();
+		extractor = new ArxivExtractor("arxiv", scholar.articleBlocksSelector, CONTENT_DEBUG);
+		var url = window.location.href;
+		if (url.search("/search/") !== -1) {
+			createAddButtons();
+			parseSearchResult(extractor);
+		} else if (url.search("/abs/") !== -1) {
+			// pass
+		}
 }

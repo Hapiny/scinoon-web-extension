@@ -46,12 +46,13 @@ function addBtn(btnField, btnClassList="btn btn-primary btn-sm add_to_rm_button"
     btn.style.marginTop = "10px";
     if (!btnField.querySelector(".flex-item.alternate-sources-dropdown")) {
         btn.style.marginLeft = "10px";
-    }
+	}
+	
     if (!btnField.querySelector(".add_to_rm_button") && check) {
         let bootstrapTag = document.createElement("div");
         bootstrapTag.className = "bootstrap";
         bootstrapTag.appendChild(btn);
-        btnField.appendChild(bootstrapTag);
+		btnField.appendChild(bootstrapTag);
     }
 
 }
@@ -147,7 +148,7 @@ function addTermsGroup(name, terms, termsBox, searchString) {
 
 function createAddButtons(blocks=undefined) {
     if (!blocks) {
-        blocks = $(scholar.articleBlocksSelector);
+        blocks = document.querySelectorAll(scholar.articleBlocksSelector);
     } 
 	for (let index = 0; index < blocks.length; index++) {
 		addBtn(blocks[index]);

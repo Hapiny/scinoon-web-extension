@@ -15,7 +15,7 @@ class Extractor {
 		}
 	}
 
-	// in inherited classes extract method must be overloaded
+	// in inherited classes "extract" method must be overloaded
 	extract(doc) {
 		let result = [];
 		return result;

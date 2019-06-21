@@ -42,7 +42,9 @@
             "matches": [
                 "*://scholar.google.com/*",
                 "*://scholar.google.ru/*",
-                "*://www.semanticscholar.org/*"
+                "*://www.semanticscholar.org/*",
+                "*://arxiv.org/search/*",
+                "*://arxiv.org/abs/*"
             ],
             "include_globs": [
                 "*://scholar.google.*/", 
@@ -51,7 +53,9 @@
                 "*scholar.google.*/citations*",
                 "*://www.semanticscholar.*/", 
                 "*www.semanticscholar.*/search*",
-                "*://www.semanticscholar.org/*/*"
+                "*://www.semanticscholar.org/*/*",
+                "*://arxiv.org/search/*",
+                "*://arxiv.org/abs/*"
             ],
             "js": [
                 "browser-polyfill.js", 
@@ -60,6 +64,7 @@
                 "extractor/extractor.js", 
                 "extractor/ss_extractor.js", 
                 "extractor/gs_extractor.js", 
+                "extractor/arxiv_extractor.js", 
                 "content/dom_utils.js",
                 "content/template_content.js"
             ],
