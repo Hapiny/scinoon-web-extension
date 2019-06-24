@@ -46,7 +46,6 @@ function parseSearchResult(extractor, extractedData = undefined) {
 		let	maps = data.anotherMaps;
 		for (let i = 0; i < maps.length; i++) {
 			let mapName = maps[i].split("/").slice(-1)[0];
-			console.log(mapName);
 			browser.runtime.sendMessage({
 				name: messages.RETURN_EXTRACTED,
 				data: {
@@ -80,8 +79,8 @@ function handleNormalizedData(message) {
 		button.innerText = "Added!"
 		button.disabled = true;
     }
-    
 	let normalizedArticlesStatus = message.data;
+	let msgMap = message.map;
 	if (CONTENT_DEBUG) {
 		console.log("CONTENT: handle normalized data");
 		console.log(normalizedArticlesStatus);
@@ -89,44 +88,56 @@ function handleNormalizedData(message) {
 
 	let articleBlocks = extractor.blocks;
     for (let index = 0; index < normalizedArticlesStatus.length; index++) {
-        let articleStatus = normalizedArticlesStatus[index];
-        let articleId = articleStatus.article.id;
-        if (articleId.sourceName === scholar.articleSourceName) {
-			let articleBlock = articleBlocks[index];
-			let button = articleBlock.querySelector(".btn.add_to_rm_button");
-			if (button) {
-				button.innerText = "Add to research map";			
-				if (articleStatus.isExist) {
-					setAdded(button);
+		browser.storage.local.get("anotherMaps").then(data => {
+			let	maps = data.anotherMaps;
+			for (let i = 0; i < maps.length; i++) {
+				let mapName = maps[i].split("/").slice(-1)[0];
+
+				if (mapName !== msgMap) {
+					continue;
 				}
-				button.addEventListener("click", function(event) {
-					browser.runtime.sendMessage({
-						name: messages.SELECTED_ARTICLES,
-						data: [articleId],
-						map : button.map,
-	        		});
-	        		setAdded(this);
-				});
-			} else {
-				console.log("CONTENT: error in button change");
-				console.log(`#add_to_rm_${index}`);
-				console.log($(".btn.add_to_rm_button"));
-			}
-			// Add "NEW" bage in Title Field of article
-            if (!articleStatus.isViewed) {
-				let titleField = scholar.titleFieldSeclector(articleBlock);
-				if (titleField) {
-					let bootstrapTag = document.createElement("div");
-					bootstrapTag.className = "bootstrap";
-					let label = document.createElement("span");
-					label.className = "btn btn-info btn-sm";
-					label.innerHTML = "New";
-					label.style.marginRight = "5px";
-					bootstrapTag.appendChild(label)
-					titleField.insertBefore(bootstrapTag, titleField.firstChild);
+
+				let articleStatus = normalizedArticlesStatus[index];
+				let articleId = articleStatus.article.id;
+				if (articleId.sourceName === scholar.articleSourceName) {
+					let articleBlock = articleBlocks[index];
+					let button = articleBlock.querySelector(`#${mapName}.add_to_rm_button`);
+					if (button) {
+						if (articleStatus.isExist && msgMap === mapName) {
+							setAdded(button);
+						} else {
+							button.innerText = `Add to "${mapName}" research map`;			
+						}
+						button.addEventListener("click", function(event) {
+							browser.runtime.sendMessage({
+								name: messages.SELECTED_ARTICLES,
+								data: [articleId],
+								map : button.id,
+							});
+							setAdded(this);
+						});
+					} else {
+						console.log("CONTENT: error in button change");
+						console.log(`#add_to_rm_${index}`);
+						console.log($(".btn.add_to_rm_button"));
+					}
+					// Add "NEW" bage in Title Field of article
+					if (!articleStatus.isViewed) {
+						let titleField = scholar.titleFieldSeclector(articleBlock);
+						if (titleField && !titleField.querySelector(".btn.btn-info")) {
+							let bootstrapTag = document.createElement("div");
+							bootstrapTag.className = "bootstrap";
+							let label = document.createElement("span");
+							label.className = "btn btn-info btn-sm";
+							label.innerHTML = "New";
+							label.style.marginRight = "5px";
+							bootstrapTag.appendChild(label)
+							titleField.insertBefore(bootstrapTag, titleField.firstChild);
+						}
+					}
 				}
 			}
-        }
+		});
     }
 }
 

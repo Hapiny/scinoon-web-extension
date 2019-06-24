@@ -58,7 +58,8 @@ class SciServer {
 			if (typeof response !== "boolean") {
 				browser.tabs.sendMessage(id, {
 					name: messages.NORMALIZED_DATA,
-					data: response
+					data: response,
+					map : message.data.map,
 				});
 			} else if (verbose) {
 				console.log("BG: normalized data error: ");
