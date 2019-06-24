@@ -22,7 +22,7 @@ function handleReturnExtracted(message, sender) {
 	if (BACKGROUND_DEBUG) {
 		console.log("BG: extraction results arrive!");
 	}
-	sciserver.saveAndProcessArticles(JSON.stringify(message.data.articles), sender);
+	sciserver.saveAndProcessArticles(JSON.stringify(message.data.articles), sender, message);
 }
 
 function handleSelectedArticles(message) {
@@ -30,9 +30,13 @@ function handleSelectedArticles(message) {
 		console.log("BG: selection received");
 		console.log(message.data);
 	}
-	sciserver.saveResearchMap(JSON.stringify(message.data), function() {
-		browser.tabs.query(sciTabsQuery).then(sendRmUpdatedToTabs,sciserver.onError);
-	});
+	sciserver.saveResearchMap(
+		JSON.stringify(message.data), 
+		function() {
+			browser.tabs.query(sciTabsQuery).then(sendRmUpdatedToTabs,sciserver.onError);
+		},
+		message.map
+	);
 }
 
 function handleSetDefaultMap(message) {
@@ -40,11 +44,21 @@ function handleSetDefaultMap(message) {
 		console.log("BG: setting default map");
 		console.log(message);
 	}
-	var newDefaultMap = message.data.map;
-	var newDefaultOrigin = message.data.origin;
+	let newDefaultMap = message.data.map;
+	let newDefaultOrigin = message.data.origin;
 
 	if (newDefaultMap && newDefaultOrigin) {
+		let newUrl = newDefaultOrigin + "/" + newDefaultMap;
 		browser.storage.local.set(message.data);
+		browser.storage.local.get("anotherMaps").then(data => {
+			let anotherMaps = data.anotherMaps;
+			if (anotherMaps.indexOf(newUrl) === -1) {
+				let newMaps = [newUrl];
+				newMaps.push(...anotherMaps);
+				browser.storage.local.set({anotherMaps: newMaps.slice(0, maxCountOfMaps)});
+			}
+		});
+		
 
 		function forEachTabInTabs(tabs) {
 			for (let tab of tabs) {
@@ -82,21 +96,30 @@ browser.runtime.onMessage.addListener(function(message, sender) {
 	}
 });
 
+let maxCountOfMaps = 3;
+let defaultMap = "CERMINE";
+let defaultServer = "https://scigraph.at.ispras.ru";
 
 browser.storage.local.get("map").then(data => {
 	if (data.map == null) {
-		browser.storage.local.set({map: "CERMINE"});
+		browser.storage.local.set({map: defaultMap});
 	}
 }, sciserver.onError);
 
 browser.storage.local.get("origin").then(data => {
 	if (data.origin == null) {
-		browser.storage.local.set({origin: "https://scigraph.at.ispras.ru"});
+		browser.storage.local.set({origin: defaultServer});
 	}
 }, sciserver.onError);
 
 browser.storage.local.get("topCount").then(data => {
 	if (data.topCount == null) {
 		browser.storage.local.set({topCount: 20});
+	}
+}, sciserver.onError);
+
+browser.storage.local.get("anotherMaps").then(data => {
+	if (data.anotherMaps == null) {
+		browser.storage.local.set({anotherMaps: [defaultServer + "/" + defaultMap]});
 	}
 }, sciserver.onError);

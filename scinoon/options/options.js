@@ -57,7 +57,8 @@ document.addEventListener("DOMContentLoaded", function() {
 	})();
 	
 	browser.runtime.onMessage.addListener(function(message) {
-		if (message.name == messages.SET_DEFAULT_MAP) {
+		if (message.name == message.SET_DEFAULT_MAP) {
+			console.log(message);
 			console.log("SET_DEFAULT_MAP catched by options");
 			document.getElementById("mapInput").value = message.data.map;
 			document.getElementById("serverInput").value = message.data.origin;
