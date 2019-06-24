@@ -64,6 +64,7 @@ class ArxivExtractor extends Extractor {
     extractArticleFromPage(articleBlockSelector="div#content") {
         let url = window.location.href;
         let articleBlock = document.querySelector(articleBlockSelector);
+        this.blocks = [articleBlock];
         let article = {
             ids : [{
                 id  : url.split("/").slice(-1)[0],

@@ -37,7 +37,7 @@ class PubmedExtractor extends Extractor {
             for (let author of authorsElems) {
                 authors.push({
                     fullName : author,
-                    ids      : {},
+                    ids      : [],
                 });
             }
             console.log(authors);
@@ -62,16 +62,14 @@ class PubmedExtractor extends Extractor {
     
     getSimilarArticlesRefs(block, selector) {
         let similarField = block.querySelector(selector);
-        let similarRefs = [];
+        let similarRefs = {};
         if (!similarField && this.verbose) {
             console.log(`EXTRACTOR (${this.name}): similar refs aren't extracted`);
         } else if (this.verbose) {
             console.log(`EXTRACTOR (${this.name}): similar refs extracted`);
-            similarRefs.push({
-                link : similarField.getAttribute("href"),
-                amount : 0,
-                ids    : [],
-            }); similarField
+            similarRefs.link = similarField.getAttribute("href");
+            similarRefs.amount = 0;
+            similarRefs.ids = [];
         }
         return similarRefs;
     }
@@ -110,10 +108,11 @@ class PubmedExtractor extends Extractor {
         };
 
         let articleBlock    = document.querySelector(blockSelector);
+        this.blocks = [articleBlock];
         article.title       = this.getTitle(articleBlock, "h1");
         article.year        = this.getYear(articleBlock, "div.cit");
         article.textUrl     = this.getTextLink(".icons.portlet > a");
-        article.absractText = this.getAbstract(articleBlock, "div.abstr").replace("Abstract", "").trim();
+        article.abstractText = this.getAbstract(articleBlock, "div.abstr").replace("Abstract", "").trim();
         article.doi         = this.getDoi(articleBlock, "div.cit");     
 
         let authors = this.getAuthors(articleBlock, "div.auths");

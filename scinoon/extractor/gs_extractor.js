@@ -12,7 +12,13 @@ class GSExtractor extends Extractor {
             let articleId = undefined;
             let clusterIdField = block.querySelector("h3[class='gs_rt'] > a");
             if (clusterIdField) {
-                articleId = clusterIdField.getAttribute("data-clk").match(/$\d+$/);
+                let dataClk = clusterIdField.getAttribute("data-clk");
+                if (dataClk) {
+                    let match_ = dataClk.match(/&d=(\d+)&/);
+                    if (match_) {
+                        articleId = match_[1];
+                    }
+                }
             }
             article.title        = this.getTitle(block, "h3[class='gs_rt']");
             article.abstractText = this.getAbstract(block, "div[class='gs_rs']");
@@ -110,7 +116,10 @@ class GSExtractor extends Extractor {
         let year = 2000;
         if (yearField.length) {
             let yearString = yearField[0].innerText.split("- ")[1];
-            year = parseInt(yearString.match(/\d{4}/g)[0]);
+            let match_ = yearString.match(/\d{4}/g);
+            if (match_) {
+                year = parseInt(match_[0]);
+            }
         }
         if (this.verbose) {
             console.log(year);
@@ -122,7 +131,10 @@ class GSExtractor extends Extractor {
         let citesCountField = block.querySelector(citesCountSelector);
         let citesCount = 0;
         if (citesCountField && citesCountField.innerText) {
-            citesCount = parseInt(citesCountField.innerText.match(/\d+/g)[0]);
+            let match_ = citesCountField.innerText.match(/\d+/g);
+            if (match_) {
+                citesCount = parseInt(match_[0]);
+            }
         }
         return citesCount;
     } 
@@ -146,7 +158,6 @@ class GSExtractor extends Extractor {
             references.link  = window.location.hostname + this.getCitesQuery(block, refencesSelector);
             references.amout = this.getCitesCount(block, refencesSelector);
             references.ids   = [];
-            // console.log(references);
         }
         return references;
     }

@@ -154,7 +154,7 @@ class SSExtractor extends Extractor {
             }],
         };
         let articleBlock = document.querySelector(articleBlockSelector);
-
+        this.blocks = [articleBlock];
         let doiField = articleBlock.querySelector('[data-selenium-selector="paper-doi"]');
         if (doiField) {
             article.doi = doiField.innerText;
