@@ -42,11 +42,19 @@ function parseSearchResult(extractor, extractedData = undefined) {
 		console.log("CONTENT: extractor result")
 		console.log(articles);
 	}
-	browser.runtime.sendMessage({
-		name: messages.RETURN_EXTRACTED,
-		data: {
-			url : window.location.href,
-			articles : articles
+	browser.storage.local.get("anotherMaps").then(data => {
+		let	maps = data.anotherMaps;
+		for (let i = 0; i < maps.length; i++) {
+			let mapName = maps[i].split("/").slice(-1)[0];
+			console.log(mapName);
+			browser.runtime.sendMessage({
+				name: messages.RETURN_EXTRACTED,
+				data: {
+					url      : window.location.href,
+					articles : articles,
+					map      : mapName,
+				}
+			});
 		}
 	});
 };
@@ -94,7 +102,8 @@ function handleNormalizedData(message) {
 				button.addEventListener("click", function(event) {
 					browser.runtime.sendMessage({
 						name: messages.SELECTED_ARTICLES,
-						data: [articleId]
+						data: [articleId],
+						map : button.map,
 	        		});
 	        		setAdded(this);
 				});

@@ -10,7 +10,7 @@ class SciServer {
 		}
 	}
 
-	saveAndProcessArticles(articles, sender) {
+	saveAndProcessArticles(articles, sender, message) {
 		let verbose = this.isDebug;
 		let response = undefined;
 		browser.storage.local.get().then(data => {
@@ -20,7 +20,7 @@ class SciServer {
 				let isSuccess = true;
 				$.ajax({
 					type : "POST",
-					url : base + "/ext/" + data.map,
+					url : base + "/ext/" + message.data.map,
 					data : articles,
 					async: false,
 					success : function(data) {
