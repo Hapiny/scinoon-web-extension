@@ -19,7 +19,7 @@ class ArxivExtractor extends Extractor {
             });
 
             article.title        = this.getTitle(block, "p.title.is-5.mathjax").trim();
-            article.textUrl      = articleIdField.href;
+            article.textUrl      = articleIdField.href + ".pdf";
             article.textType     = "PDF";
             article.authors      = this.getAuthors(block, ".authors");
             article.abstractText = this. getAbstract(block, ".abstract-full").trim().slice(0, -15);
@@ -75,7 +75,7 @@ class ArxivExtractor extends Extractor {
         article.authors      = this.getAuthors(articleBlock, "div.authors");
         article.year         = this.getYear(articleBlock, "div.dateline");
         article.abstractText = this.getAbstract(articleBlock, "blockquote.abstract.mathjax");
-        article.textUrl      = url;
+        article.textUrl      = url + ".pdf";
         article.textType     = "PDF";
         return [article];
     }

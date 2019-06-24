@@ -13,12 +13,12 @@ class PubmedExtractor extends Extractor {
                     src : "pubmed",
                 }],
             };
-            article.title               = this.getTitle(block, "p.title");
-            article.authors             = this.getAuthors(block, "p.desc");
+            article.title               = this.getTitle(block, ".title");
+            article.authors             = this.getAuthors(block, ".desc");
             article.textUrl             = hostname + "/pubmed/" + article.ids[0].id;
-            article.year                = this.getYear(block, "p.details");
-            article.similarArticlesRefs = this.getSimilarArticlesRefs(block, "p.links.nohighlight > a");
-            article.doi                 = this.getDoi(block, "p.details");
+            article.year                = this.getYear(block, ".details");
+            // article.similarArticlesRefs = this.getSimilarArticlesRefs(block, "p.links.nohighlight > a");
+            article.doi                 = this.getDoi(block, ".details");
             extractedArticles.push(article);
         };
 

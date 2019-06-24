@@ -215,7 +215,11 @@ switch(scholar.name) {
 	case "pubmed":
 		extractor = new PubmedExtractor("pubmed", scholar.articleBlocksSelector, CONTENT_DEBUG);
 		var url = window.location.href;
-		if (url.search("/?term=") !== -1) {
+		var urlParts = url.split("/");
+		if (url.search("/?term=") !== -1 || 
+			urlParts.indexOf("pmc") === urlParts.length - 1 || 
+			urlParts.indexOf("pubmed") === urlParts.length - 1) {
+			
 			createAddButtons();
 			parseSearchResult(extractor);
 		} else {

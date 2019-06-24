@@ -45,6 +45,7 @@
                 "*://www.semanticscholar.org/*",
                 "*://arxiv.org/search/*",
                 "*://arxiv.org/abs/*",
+                "*://www.ncbi.nlm.nih.gov/pmc*",
                 "*://www.ncbi.nlm.nih.gov/pubmed*"
             ],
             "include_globs": [
@@ -57,6 +58,7 @@
                 "*://www.semanticscholar.org/*/*",
                 "*://arxiv.org/search/*",
                 "*://arxiv.org/abs/*",
+                "*://www.ncbi.nlm.nih.gov/pmc*",
                 "*://www.ncbi.nlm.nih.gov/pubmed*"
             ],
             "js": [
