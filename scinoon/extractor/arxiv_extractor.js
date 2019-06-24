@@ -60,4 +60,22 @@ class ArxivExtractor extends Extractor {
         }
         return year;
     }
+
+    extractArticleFromPage(articleBlockSelector="div#content") {
+        let url = window.location.href;
+        let articleBlock = document.querySelector(articleBlockSelector);
+        let article = {
+            ids : [{
+                id  : url.split("/").slice(-1)[0],
+                src : "arxiv", 
+            }]
+        };
+        article.title        = this.getTitle(articleBlock, "h1.title.mathjax");
+        article.authors      = this.getAuthors(articleBlock, "div.authors");
+        article.year         = this.getYear(articleBlock, "div.dateline");
+        article.abstractText = this.getAbstract(articleBlock, "blockquote.abstract.mathjax");
+        article.textUrl      = url;
+        article.textType     = "PDF";
+        return [article];
+    }
 }

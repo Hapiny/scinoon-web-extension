@@ -155,8 +155,8 @@ function createAddButtons(blocks=undefined) {
 	}
 }
 
-function addButtonOnArticlePage() {
-	let btnField = document.querySelector(".flex-container.flex-wrap.flex-paper-actions-group");
+function addButtonOnArticlePage(blockSelector) {
+	let btnField = document.querySelector(blockSelector);
 	addBtn(btnField);
 }
 

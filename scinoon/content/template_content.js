@@ -14,8 +14,10 @@ if (hostname.search("google") !== -1) {
 	scholar = scholars.google;
 } else if (hostname.search("semantic") !== -1) {
 	scholar = scholars.semantic;
-} else if (hostname.search() !== -1) {
+} else if (hostname.search("arxiv") !== -1) {
 	scholar = scholars.arxiv;
+} else if (hostname.search("ncbi.nlm.nih.gov") !== -1) {
+	scholar = scholars.pubmed;
 }
 
 let baseLink = `http://${hostname}${scholar.searchPath}`;
@@ -168,7 +170,7 @@ switch(scholar.name) {
 		window.onload = () => {
 			let url = window.location.href;
 			if (url.search("/paper/") !== -1) {
-				addButtonOnArticlePage();
+				addButtonOnArticlePage(".flex-container.flex-wrap.flex-paper-actions-group");
 				let article = extractor.extractArticleFromPage();
 				parseSearchResult(extractor, article);
 			} else if (url.search("/author/") !== -1) {
@@ -189,7 +191,7 @@ switch(scholar.name) {
 						createAddButtons();
 						parseSearchResult(extractor);
 					} else if (url.search("/paper/") !== -1) {
-						addButtonOnArticlePage();
+						addButtonOnArticlePage(".flex-container.flex-wrap.flex-paper-actions-group");
 						let article = extractor.extractArticleFromPage();
 						parseSearchResult(extractor, article);
 					}
@@ -205,6 +207,21 @@ switch(scholar.name) {
 			createAddButtons();
 			parseSearchResult(extractor);
 		} else if (url.search("/abs/") !== -1) {
-			// pass
+			addButtonOnArticlePage("div#content");
+			let article = extractor.extractArticleFromPage();
+			parseSearchResult(extractor, article);
 		}
+		break;
+	case "pubmed":
+		extractor = new PubmedExtractor("pubmed", scholar.articleBlocksSelector, CONTENT_DEBUG);
+		var url = window.location.href;
+		if (url.search("/?term=") !== -1) {
+			createAddButtons();
+			parseSearchResult(extractor);
+		} else {
+			addButtonOnArticlePage("div.aux");
+			let article = extractor.extractArticleFromPage();
+			parseSearchResult(extractor, article);
+		}
+		break;
 }

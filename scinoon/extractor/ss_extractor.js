@@ -177,7 +177,7 @@ class SSExtractor extends Extractor {
             "REFERENCES",
             '[data-selenium-selector="reference"]',
             ".citation__title > a");
-        article.similarArticleRefs = this.getArticleReferencesFromPage('[data-heap-nav="similar-papers"]',
+        article.similarArticlesRefs = this.getArticleReferencesFromPage('[data-heap-nav="similar-papers"]',
             "SIMILAR PAPERS",
             '[data-selenium-selector="related-papers-list"]',
             'a[data-selenium-selector="title-link"]',

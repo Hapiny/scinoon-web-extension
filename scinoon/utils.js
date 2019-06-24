@@ -54,7 +54,22 @@ var scholars = {
 		articleBlocksSelector : ".arxiv-result",
 		articleSourceName     : "ext-arxiv",
 		titleFieldSeclector   : (block) => {
-			return block.querySelector(".title.is-5.mathjax");
+			return block.querySelector(".title.mathjax");
 		},
-	}
+	},
+	pubmed : {
+		name            : "pubmed",
+		searchPath      : "/pubmed/?term=",
+		getSearchString : () => {
+			let searchString = document.getElementById("term");
+			if (searchString) {
+				return searchString.value;
+			}
+		},
+		articleBlocksSelector : "div.rslt",
+		articleSourceName     : "ext-pubmed",
+		titleFieldSeclector   : (block) => {
+			return block.querySelector("p.title");
+		},
+	},
 };

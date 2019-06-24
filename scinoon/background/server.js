@@ -51,7 +51,6 @@ class SciServer {
 					dataType : "json",
 					contentType : "application/json"
 				});
-				console.log(isSuccess);
 				return isSuccess;
 			}
 
