@@ -1,11 +1,16 @@
 import os
 import requests
-from tqdm import tqdm
 import json
 
 host = "https://closure-compiler.appspot.com/compile"
 dir_path = "scinoon"
-output_dir = "scinoon/build"
+build_dir = "build"
+output_dir = os.path.join(build_dir, "minified")
+
+if os.path.exists(build_dir):
+    os.system("rm -R {}".format(build_dir))
+else:
+    os.mkdir(build_dir)
 
 def change_manifect(manifest):
     def get_min_names(scripts):
@@ -52,7 +57,7 @@ for file in another_files:
         with open(os.path.join(output_dir, "manifest.json"), "w") as f:
             json.dump(manifest, f, indent=4)
 
-for file in tqdm(js_files):
+for file in js_files:
     print("Minifying", file, end="... ")
     payload = {
         "compilation_level" : "SIMPLE_OPTIMIZATIONS",
@@ -69,6 +74,6 @@ for file in tqdm(js_files):
         print("done")
     else:
         print("error")
-        os.system("rm -R {}".format(output_dir))
+        os.system("rm -R {}".format(build_dir))
         break
 os.system("cd {} && zip -r ../sci_plugin.xpi *".format(output_dir))
