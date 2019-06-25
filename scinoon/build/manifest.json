@@ -1,0 +1,90 @@
+{
+    "manifest_version": 2,
+    "name": "Scinoon Local GS Extension",
+    "version": "2.0.0.91",
+    "icons": {
+        "128": "icons/icon128.png",
+        "48": "icons/icon48.png",
+        "32": "icons/icon32.png",
+        "16": "icons/button.png"
+    },
+    "background": {
+        "scripts": [
+            "browser-polyfill.min.js",
+            "lib/jquery-3.2.1.min.js",
+            "utils.min.js",
+            "background/server.min.js",
+            "background/background.min.js"
+        ]
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "http://127.0.0.1:9000/research/*",
+                "http://localhost:9000/research/*",
+                "https://scilocal.at.ispras.ru/research/*",
+                "https://scigraph.at.ispras.ru/research/*",
+                "https://scinoon.at.ispras.ru/research/*",
+                "https://scinoon.com/research/*"
+            ],
+            "js": [
+                "browser-polyfill.min.js",
+                "utils.min.js",
+                "lib/jquery-3.2.1.min.js",
+                "content/rm_content.min.js"
+            ],
+            "run_at": "document_idle"
+        },
+        {
+            "matches": [
+                "*://scholar.google.com/*",
+                "*://scholar.google.ru/*",
+                "*://www.semanticscholar.org/*",
+                "*://arxiv.org/search/*",
+                "*://arxiv.org/abs/*",
+                "*://www.ncbi.nlm.nih.gov/pmc*",
+                "*://www.ncbi.nlm.nih.gov/pubmed*"
+            ],
+            "include_globs": [
+                "*://scholar.google.*/",
+                "*scholar.google.*/scholar*",
+                "*scholar.google.*/schhp*",
+                "*scholar.google.*/citations*",
+                "*://www.semanticscholar.*/",
+                "*www.semanticscholar.*/search*",
+                "*://www.semanticscholar.org/*/*",
+                "*://arxiv.org/search/*",
+                "*://arxiv.org/abs/*",
+                "*://www.ncbi.nlm.nih.gov/pmc*",
+                "*://www.ncbi.nlm.nih.gov/pubmed*"
+            ],
+            "js": [
+                "browser-polyfill.min.js",
+                "utils.min.js",
+                "lib/jquery-3.2.1.min.js",
+                "extractor/extractor.min.js",
+                "extractor/ss_extractor.min.js",
+                "extractor/gs_extractor.min.js",
+                "extractor/arxiv_extractor.min.js",
+                "extractor/pubmed_extractor.min.js",
+                "content/dom_utils.min.js",
+                "content/template_content.min.js"
+            ],
+            "css": [
+                "lib/bootstrap.min.css"
+            ]
+        }
+    ],
+    "options_ui": {
+        "page": "options/options.html",
+        "open_in_tab": false
+    },
+    "web_accessible_resources": [
+        "lib/scholar_styles.css",
+        "icons/add.png"
+    ],
+    "permissions": [
+        "storage",
+        "tabs"
+    ]
+}
